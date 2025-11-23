@@ -8,6 +8,7 @@
     // ---------------- Auth System ----------------
     const AUTH_PAGES = ['login.html', 'signup.html'];
     const currentPage = location.pathname.split('/').pop().toLowerCase();
+    const isInPages = location.pathname.includes('/pages/');
 
     async function sha256(text) {
         const enc = new TextEncoder().encode(text);
@@ -17,7 +18,11 @@
     function getUser() { return JSON.parse(localStorage.getItem('nv_user') || 'null'); }
     function getSession() { return JSON.parse(localStorage.getItem('nv_session') || 'null'); }
     function isAuthed() { const s = getSession(); return !!(s && s.username === (getUser()?.username)); }
-    function requireAuth() { if (!isAuthed() && !AUTH_PAGES.includes(currentPage)) location.replace('login.html'); }
+    function requireAuth() {
+        if (!isAuthed() && !AUTH_PAGES.includes(currentPage)) {
+            location.replace(isInPages ? 'login.html' : 'pages/login.html');
+        }
+    }
     requireAuth();
 
     // -------- Multi-user holdings & tx helpers --------
@@ -65,7 +70,9 @@
             // zero holdings auto created on first access
             getActiveHoldings();
             notify('Account created', 'success');
-            location.replace('index.html');
+            // Check if we're in pages folder or root
+            const isInPages = location.pathname.includes('/pages/');
+            location.replace(isInPages ? '../index.html' : 'index.html');
         });
     }
 
@@ -82,14 +89,21 @@
             if (stored.username === u && stored.passHash === passHash) {
                 localStorage.setItem('nv_session', JSON.stringify({ username: u, ts: Date.now() }));
                 notify('Logged in', 'success');
-                location.replace('index.html');
+                // Check if we're in pages folder or root
+                const isInPages = location.pathname.includes('/pages/');
+                location.replace(isInPages ? '../index.html' : 'index.html');
             } else notify('Invalid credentials', 'error');
         });
     }
 
     // ---------------- Logout ----------------
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.addEventListener('click', () => { localStorage.removeItem('nv_session'); location.replace('login.html'); });
+    if (logoutBtn) logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('nv_session');
+        // Check if we're in pages folder or root
+        const isInPages = location.pathname.includes('/pages/');
+        location.replace(isInPages ? 'login.html' : 'pages/login.html');
+    });
 
     // ---------------- Send Form + Preview ----------------
     const sendForm = document.getElementById('sendForm');

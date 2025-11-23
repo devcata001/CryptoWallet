@@ -27,9 +27,32 @@ Responsive multi-page crypto wallet front-end built with HTML, Bootstrap 5, CSS,
 - Holdings adjustment for presentation demos.
 - Local transaction history.
 
+## Structure
+
+```
+/
+├── index.html           # Main dashboard (root)
+├── pages/              # App pages
+│   ├── login.html
+│   ├── signup.html
+│   ├── send.html
+│   ├── receive.html
+│   ├── add.html
+│   ├── transactions.html
+│   ├── profile.html
+│   ├── security.html
+│   └── settings.html
+├── css/
+│   └── style.css
+├── js/
+│   ├── script.js
+│   └── prices.js
+└── README.md
+```
+
 ## Running
 
-Open `signup.html` to create a demo account (stored in your browser). You will be redirected to `index.html` after login. Use `add.html` to simulate deposits. All data resides in browser storage—refresh keeps state; clearing storage or using private browsing resets.
+Open `index.html` directly or start with `pages/signup.html` to create a demo account (stored in your browser). You will be redirected to the main dashboard after login. Use `pages/add.html` to simulate deposits. All data resides in browser storage—refresh keeps state; clearing storage or using private browsing resets.
 
 ## Customization
 
