@@ -1,4 +1,4 @@
-# Catalyst Wallet Demo
+# ChainPilot Demo
 
 Responsive multi-page crypto wallet front-end built with HTML, Bootstrap 5, CSS, and vanilla JavaScript. Fetches live BTC/ETH/SOL prices from CoinGecko and stores demo holdings + transactions in `localStorage`.
 
