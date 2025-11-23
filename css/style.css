@@ -73,11 +73,22 @@ body {
     margin-bottom: 24px;
 }
 
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(5deg); }
+}
+
 .brand span {
     background: linear-gradient(135deg, #3d7dff, #6d38ff 55%, #ff2f8a);
     -webkit-background-clip: text;
     color: transparent;
-    animation: shine 6s linear infinite;
+    animation: shine 6s linear iznfinite;
 }
 
 @keyframes shine {
@@ -325,6 +336,94 @@ body {
 
 .footer-spacer {
     height: 60px;
+}
+
+/* Stats Bar */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background: var(--bg-card);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px rgba(0, 0, 0, .5);
+}
+
+.stat-icon {
+    font-size: 24px;
+    color: var(--primary);
+    opacity: 0.8;
+}
+
+.stat-item small {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-item strong {
+    display: block;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+/* Portfolio Badges */
+.portfolio-badges .badge {
+    font-size: 10px;
+    padding: 4px 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.bg-primary-subtle {
+    background: rgba(61, 125, 255, 0.15) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.countdown-text {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* View Toggle */
+.view-toggle {
+    display: flex;
+    gap: 4px;
+}
+
+.view-toggle .btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-color: rgba(61, 125, 255, 0.3);
+}
+
+.view-toggle .btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.view-toggle .btn:hover:not(.active) {
+    background: rgba(61, 125, 255, 0.1);
+    border-color: var(--primary);
 }
 
 /* Forms */

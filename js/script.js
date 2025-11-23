@@ -25,6 +25,13 @@
     }
     requireAuth();
 
+    // ---------------- Welcome Username ----------------
+    const welcomeSpan = document.getElementById('welcomeUsername');
+    if (welcomeSpan) {
+        const user = getSession()?.username;
+        if (user) welcomeSpan.textContent = user;
+    }
+
     // -------- Multi-user holdings & tx helpers --------
     function activeUsername() { return getSession()?.username; }
     function holdingsKey() { return `nv_holdings_${activeUsername()}`; }
