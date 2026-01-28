@@ -183,7 +183,15 @@
             addFundsForm.reset();
             PriceService.updateOverviewHoldings();
             // If coming from Buy shortcut, return to overview for immediate visual update
-            if (location.search.includes('asset=')) setTimeout(() => location.replace('index.html'), 400);
+            if (location.search.includes('asset=')) {
+                setTimeout(() => {
+                    if (window.location.pathname.includes('/pages/')) {
+                        location.replace('../index.html');
+                    } else {
+                        location.replace('index.html');
+                    }
+                }, 400);
+            }
         });
     }
 
