@@ -15,39 +15,121 @@
         <div class="brand"><i class="fa-solid fa-wallet"></i><span>ChainPilot</span></div>
         <div class="hamburger"><i class="fa fa-bars"></i></div>
     </div>
-    <aside class="sidebar">
-        <div class="brand"><i class="fa-solid fa-wallet"></i><span>ChainPilot</span></div>
-        <nav class="nav flex-column"><a class="nav-link" href="../index.html"><i class="fa fa-chart-line"></i>
-                Overview</a><a class="nav-link" href="send.html"><i class="fa fa-paper-plane"></i> Send</a><a
-                class="nav-link" href="receive.html"><i class="fa fa-download"></i> Receive</a><a class="nav-link"
-                href="transactions.html"><i class="fa fa-clock-rotate-left"></i> Transactions</a><a class="nav-link"
-                href="add.html"><i class="fa fa-plus"></i> Add Funds</a><a class="nav-link active"
-                href="settings.html"><i class="fa fa-gear"></i> Settings</a><a class="nav-link" href="profile.html"><i
-                    class="fa fa-user"></i> Profile</a><a class="nav-link" href="security.html"><i
-                    class="fa fa-shield"></i> Security</a></nav>
-        <div class="mt-auto"><button id="logoutBtn" class="btn btn-outline-light w-100 btn-sm"><i
-                    class="fa fa-right-from-bracket"></i> Logout</button></div>
-    </aside>
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a class="bottom-nav-link" href="../index.html">
+            <i class="fa fa-chart-line"></i>
+            <span>Overview</span>
+        </a>
+        <a class="bottom-nav-link" href="send.html">
+            <i class="fa fa-paper-plane"></i>
+            <span>Send</span>
+        </a>
+        <a class="bottom-nav-link" href="receive.html">
+            <i class="fa fa-download"></i>
+            <span>Receive</span>
+        </a>
+        <a class="bottom-nav-link" href="add.html">
+            <i class="fa fa-plus"></i>
+            <span>Add</span>
+        </a>
+        <a class="bottom-nav-link" href="transactions.html">
+            <i class="fa fa-clock-rotate-left"></i>
+            <span>Txs</span>
+        </a>
+        <a class="bottom-nav-link" href="settings.html">
+            <i class="fa fa-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
     <main class="main">
         <h1 class="mb-3">Settings</h1>
-        <p class="text-secondary">Customize demo balances (per-user).</p>
-        <div class="form-card mb-4">
-            <h5 class="mb-2">Holdings (Demo Adjust)</h5>
-            <form id="userHoldingsForm" class="row g-3">
-                <div class="col-md-4"><label class="form-label">BTC</label><input type="number" step="0.00000001"
-                        class="form-control" name="BTC" /></div>
-                <div class="col-md-4"><label class="form-label">ETH</label><input type="number" step="0.00000001"
-                        class="form-control" name="ETH" /></div>
-                <div class="col-md-4"><label class="form-label">SOL</label><input type="number" step="0.00000001"
-                        class="form-control" name="SOL" /></div>
-                <div class="col-12"><button class="btn btn-primary mt-2" type="submit"><i class="fa fa-floppy-disk"></i>
-                        Save Balances</button></div>
-            </form><small class="text-secondary d-block mt-3">Changes reflect instantly in overview.</small>
+        <p class="text-secondary">Manage your account, security, and preferences.</p>
+        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.2s;">
+            <h5 class="mb-2">Account</h5>
+            <div class="d-flex flex-wrap gap-4">
+                <div><small class="text-secondary">Username</small>
+                    <div id="profileUsername" class="fw-bold">--</div>
+                </div>
+                <div><small class="text-secondary">Session Started</small>
+                    <div id="profileSessionTs" class="fw-bold">--</div>
+                </div>
+            </div>
+        </div>
+        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.3s;">
+            <h5 class="mb-2">Holdings Summary</h5>
+            <table class="table table-dark table-sm">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="profileHoldings"></tbody>
+            </table>
+        </div>
+        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.4s;">
+            <h5 class="mb-2">Change Password</h5>
+            <form id="pwdChangeForm" class="row g-3">
+                <div class="col-12"><label class="form-label">Current Password</label><input type="password"
+                        class="form-control" name="current" required /></div>
+                <div class="col-12"><label class="form-label">New Password</label><input type="password"
+                        class="form-control" name="new" required /></div>
+                <div class="col-12"><label class="form-label">Confirm New Password</label><input type="password"
+                        class="form-control" name="confirm" required /></div>
+                <div class="col-12"><button class="btn btn-primary mt-2" type="submit"><i class="fa fa-key"></i>
+                        Change Password</button></div>
+            </form>
+        </div>
+        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.5s;">
+            <h5>Password Strength</h5><input type="password" id="pwd" class="form-control"
+                placeholder="Enter a password" />
+            <div id="passwordStrength" class="mt-2">
+                <div class="bar"></div>
+            </div><small class="text-secondary">Increase length and mix characters for a stronger score.</small>
+            <hr class="border-secondary my-4" />
+            <h5>Two-Factor Authentication (Demo)</h5>
+            <p class="text-secondary">Simulated toggle; doesn't send codes.</p>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="twofaSwitch"><label
+                    class="form-check-label" for="twofaSwitch">Enable 2FA</label></div><small id="twofaStatus"
+                class="text-secondary mt-2 d-block">2FA disabled</small>
+        </div>
+        <div class="d-flex justify-content-center mt-4 mb-5">
+            <button id="logoutBtn" class="btn btn-danger btn-lg px-5"><i
+                    class="fa fa-right-from-bracket me-2"></i>Logout</button>
         </div>
     </main>
     <script src="../js/prices.js"></script>
     <script src="../js/script.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', () => { const form = document.getElementById('userHoldingsForm'); const session = JSON.parse(localStorage.getItem('nv_session') || 'null'); const key = session ? ('nv_holdings_' + session.username) : 'nw_holdings'; let holdings = JSON.parse(localStorage.getItem(key) || 'null'); if (!holdings) { holdings = { BTC: 0, ETH: 0, SOL: 0 }; localStorage.setItem(key, JSON.stringify(holdings)); } ['BTC', 'ETH', 'SOL'].forEach(sym => { form[sym].value = holdings[sym] || 0; }); form.addEventListener('submit', e => { e.preventDefault(); holdings = { BTC: +form.BTC.value || 0, ETH: +form.ETH.value || 0, SOL: +form.SOL.value || 0 }; localStorage.setItem(key, JSON.stringify(holdings)); PriceService.updateOverviewHoldings(); }); });</script>
+    <script>
+        // Profile info and holdings summary
+        document.addEventListener('DOMContentLoaded', () => {
+            // Username and session
+            const session = JSON.parse(localStorage.getItem('nv_session') || 'null');
+            document.getElementById('profileUsername').textContent = session ? session.username : '--';
+            document.getElementById('profileSessionTs').textContent = session ? new Date(session.ts).toLocaleString() : '--';
+            // Holdings summary
+            const key = session ? ('nv_holdings_' + session.username) : 'nw_holdings';
+            const holdings = JSON.parse(localStorage.getItem(key) || 'null') || { BTC: 0, ETH: 0, SOL: 0 };
+            const tbody = document.getElementById('profileHoldings');
+            tbody.innerHTML = '';
+            Object.entries(holdings).forEach(([asset, amount]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${asset}</td><td>${amount}</td>`;
+                tbody.appendChild(tr);
+            });
+            // Password strength and 2FA
+            const sw = document.getElementById('twofaSwitch');
+            const status = document.getElementById('twofaStatus');
+            const saved = localStorage.getItem('nw_2fa') === 'true';
+            sw.checked = saved;
+            status.textContent = saved ? '2FA enabled' : '2FA disabled';
+            sw.addEventListener('change', () => {
+                localStorage.setItem('nw_2fa', sw.checked);
+                status.textContent = sw.checked ? '2FA enabled' : '2FA disabled';
+            });
+        });
+    </script>
 </body>
 
 </html>
