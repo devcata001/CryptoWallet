@@ -64,15 +64,82 @@
                             <th>Amount</th>
                             <th>Fee</th>
                             <th>Total</th>
+                            <th>Receipt</th>
                         </tr>
                     </thead>
                     <tbody id="txTableBody"></tbody>
                 </table>
+                <!-- Transaction Receipt Modal -->
+                <div class="modal fade" id="txReceiptModal" tabindex="-1" aria-labelledby="txReceiptLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="txReceiptLabel">Transaction Receipt</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="txReceiptBody">
+                                <!-- Details injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div><small class="text-secondary">Data persists in browser storage only.</small>
         </div>
     </main>
     <script src="../js/prices.js"></script>
     <script src="../js/script.js"></script>
+    <script>
+        // Transaction receipt modal logic (robust for all browsers)
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('txReceiptModal');
+            const body = document.getElementById('txReceiptBody');
+            window.showTxReceipt = function (idx) {
+                const session = JSON.parse(localStorage.getItem('nv_session'));
+                const txs = JSON.parse(localStorage.getItem('nv_txs_' + (session?.username || '')) || '[]');
+                const tx = txs[idx];
+                if (!tx) return;
+                body.innerHTML = `
+              <div><b>Date/Time:</b> ${new Date(tx.ts).toLocaleString()}</div>
+              <div><b>Type:</b> ${tx.type || 'SEND'}</div>
+              <div><b>Recipient / Source:</b> ${tx.to}</div>
+              <div><b>Asset:</b> ${tx.asset}</div>
+              <div><b>Amount:</b> ${tx.amount}</div>
+              <div><b>Fee:</b> ${tx.fee}</div>
+              <div><b>Total:</b> ${tx.total}</div>
+            `;
+                // Show modal (Bootstrap 5 or fallback)
+                let shown = false;
+                if (window.bootstrap && window.bootstrap.Modal) {
+                    try {
+                        const m = window.bootstrap.Modal.getOrCreateInstance(modal);
+                        m.show();
+                        shown = true;
+                    } catch (e) { shown = false; }
+                }
+                if (!shown) {
+                    modal.classList.add('show');
+                    modal.style.display = 'block';
+                    modal.removeAttribute('aria-hidden');
+                    modal.setAttribute('aria-modal', 'true');
+                    // Close on click outside or close button
+                    function closeModal() {
+                        modal.classList.remove('show');
+                        modal.style.display = 'none';
+                        modal.setAttribute('aria-hidden', 'true');
+                        modal.removeAttribute('aria-modal');
+                        document.removeEventListener('mousedown', onClickOutside);
+                    }
+                    function onClickOutside(e) {
+                        if (!modal.contains(e.target)) closeModal();
+                    }
+                    modal.querySelector('.btn-close').onclick = closeModal;
+                    setTimeout(() => document.addEventListener('mousedown', onClickOutside), 0);
+                }
+            };
+        });
+    </script>
 </body>
 
 </html>

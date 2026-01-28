@@ -128,5 +128,15 @@ const PriceService = (() => {
 
 window.addEventListener('DOMContentLoaded', () => {
     PriceService.initHoldings();
+    // Always show last known values or a spinner immediately
+    const assetsList = document.getElementById('assetsList');
+    const totalEl = document.getElementById('totalBalance');
+    if (assetsList && assetsList.innerHTML.trim() === '') {
+        assetsList.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    }
+    if (totalEl && totalEl.textContent === '$0.00') {
+        // Try to show last cached values
+        PriceService.renderOverviewHoldings();
+    }
     PriceService.schedule();
 });

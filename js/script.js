@@ -265,7 +265,15 @@
     function renderTxs() {
         if (!txTableBody) return;
         const txs = getSortedFilteredTxs();
-        txTableBody.innerHTML = txs.map(tx => `<tr class="fade-in"><td>${new Date(tx.ts).toLocaleString()}</td><td>${tx.type || 'SEND'}</td><td>${tx.to}</td><td>${tx.amount} ${tx.asset}</td><td>${tx.fee.toFixed(6)} ${tx.asset}</td><td>${tx.total.toFixed(6)} ${tx.asset}</td></tr>`).join('');
+        txTableBody.innerHTML = txs.map((tx, i) => `<tr class="fade-in">
+            <td>${new Date(tx.ts).toLocaleString()}</td>
+            <td>${tx.type || 'SEND'}</td>
+            <td>${tx.to}</td>
+            <td>${tx.amount} ${tx.asset}</td>
+            <td>${tx.fee.toFixed(6)} ${tx.asset}</td>
+            <td>${tx.total.toFixed(6)} ${tx.asset}</td>
+            <td><button class="btn btn-sm btn-outline-info" onclick="showTxReceipt(${i})">Receipt</button></td>
+        </tr>`).join('');
     }
     function exportTxs() {
         const txs = getActiveTxs();
