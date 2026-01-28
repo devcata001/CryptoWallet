@@ -14,12 +14,58 @@ const PriceService = (() => {
         { id: 'litecoin', symbol: 'LTC', name: 'Litecoin', logo: 'https://cryptologos.cc/logos/litecoin-ltc-logo.png', color: '#b8b8b8' }
     ];
 
+    let lastPrices = null;
     async function fetchPrices(vs = 'usd') {
         const ids = ASSETS.map(a => a.id).join(',');
         const url = `${API}?ids=${ids}&vs_currencies=${vs}&include_24hr_change=true`;
         const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) throw new Error('Price API failed');
-        return res.json();
+        const data = await res.json();
+        lastPrices = data;
+        localStorage.setItem('nv_last_prices', JSON.stringify(data));
+        return data;
+    }
+
+    // Render holdings with provided or cached prices
+    function renderOverviewHoldings(prices) {
+        const holdings = getActiveHoldings();
+        const data = prices || lastPrices || JSON.parse(localStorage.getItem('nv_last_prices') || 'null');
+        if (!data) return;
+        const snapshots = ASSETS.map(asset => {
+            const price = data[asset.id]?.usd || 0;
+            const change = data[asset.id]?.usd_24h_change || 0;
+            const amount = holdings[asset.symbol] || 0;
+            return { asset, price, change, amount, value: amount * price };
+        });
+        const total = snapshots.reduce((acc, s) => acc + s.value, 0);
+        // Render asset list v2
+        const assetsList = document.getElementById('assetsList');
+        if (assetsList) {
+            assetsList.innerHTML = '';
+            snapshots.forEach(s => {
+                const row = document.createElement('div');
+                row.className = 'asset-list-row';
+                row.innerHTML = `
+                        <div class="asset-list-left">
+                            <span class="asset-list-icon"><img src="${s.asset.logo}" alt="${s.asset.symbol}" /></span>
+                            <span class="asset-list-name">${s.asset.name}<span class="asset-list-symbol">${s.asset.symbol}</span></span>
+                        </div>
+                        <div class="asset-list-right">
+                            <span class="asset-list-price">${formatCurrency(s.price)}</span>
+                            <span class="asset-list-balance">${formatCurrency(s.value)} (${s.amount.toFixed(4)} ${s.asset.symbol})</span>
+                        </div>
+                    `;
+                assetsList.appendChild(row);
+            });
+        }
+        const totalEl = document.getElementById('totalBalance');
+        if (totalEl) totalEl.textContent = formatCurrency(total);
+        const totalChangeChip = document.getElementById('totalChange');
+        if (totalChangeChip) {
+            const avgChange = snapshots.length ? (snapshots.reduce((acc, s) => acc + s.change, 0) / snapshots.length) : 0;
+            totalChangeChip.textContent = (avgChange >= 0 ? '+' : '') + avgChange.toFixed(2) + '% Last 24h';
+            totalChangeChip.classList.toggle('negative', avgChange < 0);
+        }
     }
 
     function formatCurrency(value, currency = 'USD') {
@@ -42,45 +88,9 @@ const PriceService = (() => {
     }
 
     async function updateOverviewHoldings() {
-        const holdings = getActiveHoldings();
         try {
             const data = await fetchPrices('usd');
-            const snapshots = ASSETS.map(asset => {
-                const price = data[asset.id]?.usd || 0;
-                const change = data[asset.id]?.usd_24h_change || 0;
-                const amount = holdings[asset.symbol] || 0;
-                return { asset, price, change, amount, value: amount * price };
-            });
-            const total = snapshots.reduce((acc, s) => acc + s.value, 0);
-
-            // Render asset list v2
-            const assetsList = document.getElementById('assetsList');
-            if (assetsList) {
-                assetsList.innerHTML = '';
-                snapshots.forEach(s => {
-                    const row = document.createElement('div');
-                    row.className = 'asset-list-row';
-                    row.innerHTML = `
-                            <div class="asset-list-left">
-                                <span class="asset-list-icon"><img src="${s.asset.logo}" alt="${s.asset.symbol}" /></span>
-                                <span class="asset-list-name">${s.asset.name}<span class="asset-list-symbol">${s.asset.symbol}</span></span>
-                            </div>
-                            <div class="asset-list-right">
-                                <span class="asset-list-price">${formatCurrency(s.price)}</span>
-                                <span class="asset-list-balance">${formatCurrency(s.value)} (${s.amount.toFixed(4)} ${s.asset.symbol})</span>
-                            </div>
-                        `;
-                    assetsList.appendChild(row);
-                });
-            }
-            const totalEl = document.getElementById('totalBalance');
-            if (totalEl) totalEl.textContent = formatCurrency(total);
-            const totalChangeChip = document.getElementById('totalChange');
-            if (totalChangeChip) {
-                const avgChange = snapshots.length ? (snapshots.reduce((acc, s) => acc + s.change, 0) / snapshots.length) : 0;
-                totalChangeChip.textContent = (avgChange >= 0 ? '+' : '') + avgChange.toFixed(2) + '% Last 24h';
-                totalChangeChip.classList.toggle('negative', avgChange < 0);
-            }
+            renderOverviewHoldings(data);
         } catch (e) {
             console.error(e);
         }
@@ -113,7 +123,7 @@ const PriceService = (() => {
         setInterval(tickCountdown, 1000);
     }
 
-    return { fetchPrices, updateOverviewHoldings, initHoldings, schedule, ASSETS };
+    return { fetchPrices, updateOverviewHoldings, initHoldings, schedule, ASSETS, renderOverviewHoldings };
 })();
 
 window.addEventListener('DOMContentLoaded', () => {

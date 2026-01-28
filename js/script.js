@@ -152,6 +152,8 @@
             notify(`Sent ${amount} ${asset} to ${to}. Fee: ${fee.toFixed(6)} ${asset}`, 'success');
             sendForm.reset();
             updatePreview();
+            // Instantly update UI with cached prices
+            if (window.PriceService && PriceService.renderOverviewHoldings) PriceService.renderOverviewHoldings();
             PriceService.updateOverviewHoldings();
         });
     }
@@ -181,6 +183,8 @@
             saveActiveTxs(txs);
             notify(`Added ${amount} ${asset} successfully`, 'success');
             addFundsForm.reset();
+            // Instantly update UI with cached prices
+            if (window.PriceService && PriceService.renderOverviewHoldings) PriceService.renderOverviewHoldings();
             PriceService.updateOverviewHoldings();
             // If coming from Buy shortcut, return to overview for immediate visual update
             if (location.search.includes('asset=')) {
