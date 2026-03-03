@@ -329,17 +329,27 @@
         '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Balance — fetch live prices then render (fallback to defaults if offline)
+    // Balance — read from shared price cache (written by dashboard), fallback to fetch if stale
     (function () {
-      renderBalance(); // show immediately with fallback prices
+      const CACHE_KEY = 'nv_price_cache', CACHE_TTL = 120000;
+      try {
+        const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        if (c && Date.now() - c.ts < CACHE_TTL) {
+          ASSETS.forEach(a => { if (c.prices[a.cgId]) a.price = c.prices[a.cgId].usd; });
+          renderBalance(); return;
+        }
+      } catch (e) { }
+      renderBalance(); // show with fallback prices first
       const ids = ASSETS.map(a => a.cgId).join(',');
       fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&precision=6`)
         .then(r => r.json())
         .then(data => {
-          ASSETS.forEach(a => { if (data[a.cgId] && data[a.cgId].usd) a.price = data[a.cgId].usd; });
+          const prices = {};
+          ASSETS.forEach(a => { if (data[a.cgId] && data[a.cgId].usd) { a.price = data[a.cgId].usd; prices[a.cgId] = { usd: a.price, chg: 0 }; } });
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), prices }));
           renderBalance();
         })
-        .catch(() => { }); // silently keep fallback prices
+        .catch(() => { });
     })();
 
     // 2FA

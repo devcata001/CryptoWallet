@@ -491,6 +491,7 @@
             <button class="active" onclick="switchTab(this,'cryptoPanel')">Crypto</button>
             <button onclick="switchTab(this,'nftPanel')">NFTs</button>
             <button onclick="switchTab(this,'defiPanel')">DeFi</button>
+            <button onclick="switchTab(this,'activityPanel')">Activity</button>
           </div>
         </div>
 
@@ -512,6 +513,11 @@
         <!-- DeFi panel -->
         <div class="px-24" id="defiPanel" style="display:none;">
           <div class="empty-state"><i class="fa fa-seedling"></i>No active DeFi positions.</div>
+        </div>
+
+        <!-- Activity panel -->
+        <div class="px-24" id="activityPanel" style="display:none;">
+          <div id="txList"></div>
         </div>
       </div>
 
@@ -653,20 +659,41 @@
     function saveH(h) { localStorage.setItem('nv_holdings', JSON.stringify(h)); }
 
     /* ══ PRICE FETCHING ══════════════════════════════════════════════ */
+    const CACHE_KEY = 'nv_price_cache';
+    const CACHE_TTL = 120000; // 2 minutes
+
+    function loadCache() {
+      try {
+        const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        if (c && Date.now() - c.ts < CACHE_TTL) {
+          ASSETS.forEach(a => { if (c.prices[a.cgId]) { a.price = c.prices[a.cgId].usd; a.change24h = c.prices[a.cgId].chg; } });
+          return true;
+        }
+      } catch (e) { }
+      return false;
+    }
+
     async function fetchPrices() {
+      if (loadCache()) {
+        document.getElementById('lastUpdated').textContent = 'Cached · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        renderAll(); return;
+      }
       try {
         const ids = ASSETS.map(a => a.cgId).join(',');
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&precision=6`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
+        const prices = {};
         ASSETS.forEach(a => {
           const d = data[a.cgId];
           if (d) {
             a.price = d.usd;
             a.change24h = d.usd_24h_change || 0;
+            prices[a.cgId] = { usd: d.usd, chg: a.change24h };
           }
         });
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), prices }));
         document.getElementById('lastUpdated').textContent = 'Live · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       } catch (e) {
         document.getElementById('lastUpdated').textContent = 'Prices cached';
@@ -741,10 +768,11 @@
     function switchTab(btn, panel) {
       document.querySelectorAll('#tabBar button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      ['cryptoPanel', 'nftPanel', 'defiPanel'].forEach(id => {
+      ['cryptoPanel', 'nftPanel', 'defiPanel', 'activityPanel'].forEach(id => {
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
       const t = document.getElementById(panel); if (t) t.style.display = '';
+      if (panel === 'activityPanel') renderTxList();
     }
 
     /* ══ SHEETS ══════════════════════════════════════════════════════ */
@@ -774,6 +802,48 @@
         .catch(() => openNotify(currentAddr.slice(0, 20) + '…', 'success'));
     }
 
+    /* ══ TRANSACTIONS ════════════════════════════════════════════════ */
+    function getTxs() { return JSON.parse(localStorage.getItem('nv_txs') || '[]'); }
+    function saveTxs(txs) { localStorage.setItem('nv_txs', JSON.stringify(txs.slice(0, 100))); }
+    function logTx(type, sym, qty, usd, addr) {
+      const txs = getTxs();
+      txs.unshift({ type, sym, qty, usd: usd || 0, addr: addr || '', ts: Date.now() });
+      saveTxs(txs);
+    }
+    function renderTxList() {
+      const txs = getTxs();
+      const el = document.getElementById('txList');
+      if (!txs.length) {
+        el.innerHTML = '<div class="empty-state"><i class="fa fa-clock-rotate-left"></i>No transactions yet.</div>';
+        return;
+      }
+      const isStable = s => ['USDT', 'USDC'].includes(s);
+      el.innerHTML = txs.map(tx => {
+        const a = ASSETS.find(x => x.sym === tx.sym) || {};
+        const icon = tx.type === 'buy' ? 'fa-arrow-down' : 'fa-arrow-up';
+        const iconBg = tx.type === 'buy' ? 'rgba(61,255,32,.15)' : 'rgba(255,77,77,.15)';
+        const iconCol = tx.type === 'buy' ? 'var(--green)' : 'var(--error)';
+        const label = tx.type === 'buy' ? 'Received' : 'Sent';
+        const qtyFmt = fmt(tx.qty, isStable(tx.sym) ? 2 : 6);
+        const date = new Date(tx.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const time = new Date(tx.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const shortAddr = tx.addr ? tx.addr.slice(0, 6) + '…' + tx.addr.slice(-4) : '';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:40px;height:40px;border-radius:50%;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa ${icon}" style="color:${iconCol};font-size:15px;"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${label} ${tx.sym}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${date} · ${time}${shortAddr ? ' · ' + shortAddr : ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-weight:700;font-size:14px;color:${iconCol};">${tx.type === 'buy' ? '+' : '-'}${qtyFmt} ${tx.sym}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">$${fmt(tx.usd, 2)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     /* ══ SEND ════════════════════════════════════════════════════════ */
     function updateSendPreview() {
       const sym = document.getElementById('sendAsset').value;
@@ -800,7 +870,9 @@
       const h = getH();
       if ((h[sym] || 0) < amt) return se('Insufficient ' + sym + ' balance');
       h[sym] = (h[sym] || 0) - amt;
-      saveH(h); renderAll();
+      saveH(h);
+      logTx('send', sym, amt, amt * (ASSETS.find(x => x.sym === sym) || {}).price, addr);
+      renderAll();
       closeSheet('sendSheet');
       document.getElementById('sendAddr').value = '';
       document.getElementById('sendAmt').value = '';
@@ -825,7 +897,9 @@
       const qty = usd / a.price;
       const h = getH();
       h[sym] = (h[sym] || 0) + qty;
-      saveH(h); renderAll();
+      saveH(h);
+      logTx('buy', sym, qty, usd);
+      renderAll();
       closeSheet('buySheet');
       openNotify(`Bought ${fmt(qty, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym} for $${fmt(usd, 2)}`, 'success');
     }
