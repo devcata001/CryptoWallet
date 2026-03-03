@@ -142,14 +142,6 @@
           <div class="addr-chip">0x1a2b...3c4d</div>
         </div>
 
-        <!-- Balance card -->
-        <div class="px-24 mb-20 fade-in delay-1">
-          <div class="card" style="text-align:center;">
-            <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Total Balance</div>
-            <div style="font-size:28px;font-weight:800;" id="settingsBalance">$0.00</div>
-          </div>
-        </div>
-
         <div class="px-24 fade-in delay-2">
           <!-- Security -->
           <div class="settings-group">
@@ -310,48 +302,6 @@
   </div><!-- /phone-frame -->
 
   <script>
-    const ASSETS = [
-      { sym: 'BTC', cgId: 'bitcoin', price: 65000 },
-      { sym: 'ETH', cgId: 'ethereum', price: 3400 },
-      { sym: 'BNB', cgId: 'binancecoin', price: 590 },
-      { sym: 'SOL', cgId: 'solana', price: 175 },
-      { sym: 'USDT', cgId: 'tether', price: 1 },
-      { sym: 'USDC', cgId: 'usd-coin', price: 1 },
-    ];
-    const DEFAULT_H = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, USDT: 0, USDC: 0 };
-    function getH() {
-      const stored = JSON.parse(localStorage.getItem('nv_holdings') || '{}');
-      return Object.assign({}, DEFAULT_H, stored);
-    }
-    function renderBalance() {
-      const h = getH(), total = ASSETS.reduce((s, a) => s + (h[a.sym] || 0) * a.price, 0);
-      document.getElementById('settingsBalance').textContent =
-        '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // Balance — read from shared price cache (written by dashboard), fallback to fetch if stale
-    (function () {
-      const CACHE_KEY = 'nv_price_cache', CACHE_TTL = 120000;
-      try {
-        const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-        if (c && Date.now() - c.ts < CACHE_TTL) {
-          ASSETS.forEach(a => { if (c.prices[a.cgId]) a.price = c.prices[a.cgId].usd; });
-          renderBalance(); return;
-        }
-      } catch (e) { }
-      renderBalance(); // show with fallback prices first
-      const ids = ASSETS.map(a => a.cgId).join(',');
-      fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&precision=6`)
-        .then(r => r.json())
-        .then(data => {
-          const prices = {};
-          ASSETS.forEach(a => { if (data[a.cgId] && data[a.cgId].usd) { a.price = data[a.cgId].usd; prices[a.cgId] = { usd: a.price, chg: 0 }; } });
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), prices }));
-          renderBalance();
-        })
-        .catch(() => { });
-    })();
-
     // 2FA
     const tfaTog = document.getElementById('tfaToggle');
     const tfaLbl = document.getElementById('tfaLabel');
