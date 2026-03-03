@@ -1,135 +1,400 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ChainPilot - Settings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Nova Wallet – Settings</title>
+  <link rel="stylesheet" href="../css/nova.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .screen {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .screen-inner {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      padding-bottom: 24px;
+    }
+
+    .screen-inner::-webkit-scrollbar {
+      display: none;
+    }
+
+    .px-24 {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .profile-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 24px 20px;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a3d1a, #0d2b0d);
+      border: 2px solid rgba(61, 255, 32, .4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 0 20px rgba(61, 255, 32, .2);
+    }
+
+    .addr-chip {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    /* sheet overlay anchored in phone-frame */
+    .sheet-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0, 0, 0, .65);
+      backdrop-filter: blur(3px);
+    }
+
+    .sheet-overlay.open {
+      display: flex;
+    }
+
+    .sheet-card {
+      position: relative;
+      width: 100%;
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      padding: 24px 24px 40px;
+      animation: slideUp .3s cubic-bezier(.4, 0, .2, 1) both;
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .sheet-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .notify-fixed {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      width: 320px;
+      max-width: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+  </style>
 </head>
 
-<body class="dark-theme">
-    <div class="mobile-topbar d-lg-none">
-        <div class="brand"><i class="fa-solid fa-wallet"></i><span>ChainPilot</span></div>
-        <div class="hamburger"><i class="fa fa-bars"></i></div>
-    </div>
-    <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-        <a class="bottom-nav-link" href="../index.html">
-            <i class="fa fa-chart-line"></i>
-            <span>Overview</span>
-        </a>
-        <a class="bottom-nav-link" href="send.html">
-            <i class="fa fa-paper-plane"></i>
-            <span>Send</span>
-        </a>
-        <a class="bottom-nav-link" href="receive.html">
-            <i class="fa fa-download"></i>
-            <span>Receive</span>
-        </a>
-        <a class="bottom-nav-link" href="add.html">
-            <i class="fa fa-plus"></i>
-            <span>Add</span>
-        </a>
-        <a class="bottom-nav-link" href="transactions.html">
-            <i class="fa fa-clock-rotate-left"></i>
-            <span>Txs</span>
-        </a>
-        <a class="bottom-nav-link" href="settings.html">
-            <i class="fa fa-gear"></i>
-            <span>Settings</span>
-        </a>
-    </nav>
-    <main class="main">
-        <h1 class="mb-3">Settings</h1>
-        <p class="text-secondary">Manage your account, security, and preferences.</p>
-        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.2s;">
-            <h5 class="mb-2">Account</h5>
-            <div class="d-flex flex-wrap gap-4">
-                <div><small class="text-secondary">Username</small>
-                    <div id="profileUsername" class="fw-bold">--</div>
-                </div>
-                <div><small class="text-secondary">Session Started</small>
-                    <div id="profileSessionTs" class="fw-bold">--</div>
-                </div>
+<body>
+  <div class="phone-frame" style="position:relative;">
+    <div class="screen">
+      <nav class="top-nav" style="flex-shrink:0;">
+        <a href="dashboard.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
+        <div class="top-nav-title">
+          <h4>Settings</h4>
+        </div>
+        <div style="width:36px;"></div>
+      </nav>
+
+      <div class="screen-inner">
+        <!-- Profile hero -->
+        <div class="profile-hero fade-in">
+          <div class="avatar">👤</div>
+          <h3>Account 1</h3>
+          <div class="addr-chip">0x1a2b...3c4d</div>
+        </div>
+
+        <!-- Balance card -->
+        <div class="px-24 mb-20 fade-in delay-1">
+          <div class="card" style="text-align:center;">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Total Balance</div>
+            <div style="font-size:28px;font-weight:800;" id="settingsBalance">$0.00</div>
+          </div>
+        </div>
+
+        <div class="px-24 fade-in delay-2">
+          <!-- Security -->
+          <div class="settings-group">
+            <div class="settings-label">Security</div>
+            <div class="settings-item" onclick="openSheet('changePinSheet')">
+              <div class="left">
+                <i class="fa fa-lock" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Change Password</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
             </div>
+            <div class="settings-item" onclick="toggleTwoFA()">
+              <div class="left">
+                <i class="fa fa-shield-halved" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Two-Factor Auth</div>
+              </div>
+              <div class="right">
+                <span id="tfaLabel" style="font-size:12px;color:var(--muted);">Off</span>
+                <div class="toggle" id="tfaToggle"></div>
+              </div>
+            </div>
+            <div class="settings-item" onclick="alert('Biometrics — coming soon')">
+              <div class="left">
+                <i class="fa fa-fingerprint" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Biometric Login</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <!-- Wallet -->
+          <div class="settings-group">
+            <div class="settings-label">Wallet</div>
+            <div class="settings-item" onclick="location.href='confirm.html'">
+              <div class="left">
+                <i class="fa fa-seedling" style="background:rgba(255,200,61,.1);color:#ffc83d;"></i>
+                <div class="item-title">Recovery Phrase</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="alert('Private key — demo only')">
+              <div class="left">
+                <i class="fa fa-key" style="background:rgba(255,200,61,.1);color:#ffc83d;"></i>
+                <div class="item-title">Export Private Key</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="alert('Networks — coming soon')">
+              <div class="left">
+                <i class="fa fa-network-wired" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <div class="item-title">Networks</div>
+              </div>
+              <div class="right"><span style="font-size:12px;color:var(--muted);">Mainnet</span><i
+                  class="fa fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <!-- Preferences -->
+          <div class="settings-group">
+            <div class="settings-label">Preferences</div>
+            <div class="settings-item" onclick="alert('Currency — coming soon')">
+              <div class="left">
+                <i class="fa fa-dollar-sign" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Currency</div>
+              </div>
+              <div class="right"><span style="font-size:12px;color:var(--muted);">USD</span><i
+                  class="fa fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="alert('Language — coming soon')">
+              <div class="left">
+                <i class="fa fa-globe" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <div class="item-title">Language</div>
+              </div>
+              <div class="right"><span style="font-size:12px;color:var(--muted);">English</span><i
+                  class="fa fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="alert('Notifications — coming soon')">
+              <div class="left">
+                <i class="fa fa-bell" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <div class="item-title">Notifications</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <!-- Support -->
+          <div class="settings-group">
+            <div class="settings-label">Support</div>
+            <div class="settings-item" onclick="alert('Help — coming soon')">
+              <div class="left">
+                <i class="fa fa-circle-question" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <div class="item-title">Help & Support</div>
+              </div>
+              <div class="right"><i class="fa fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="alert('Nova Wallet v1.0.0')">
+              <div class="left">
+                <i class="fa fa-info-circle" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <div class="item-title">About</div>
+              </div>
+              <div class="right"><span style="font-size:12px;color:var(--muted);">v1.0.0</span><i
+                  class="fa fa-chevron-right"></i></div>
+            </div>
+          </div>
+
+          <button class="btn btn-ghost mb-12" id="logoutBtn"
+            style="border-color:rgba(255,77,77,.4);color:var(--error);">
+            <i class="fa fa-right-from-bracket"></i> Log Out
+          </button>
+          <button class="btn mb-32" id="resetBtn"
+            style="background:rgba(255,77,77,.1);color:var(--error);border:1px solid rgba(255,77,77,.2);border-radius:50px;">
+            <i class="fa fa-trash"></i> Reset Wallet
+          </button>
         </div>
-        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.3s;">
-            <h5 class="mb-2">Holdings Summary</h5>
-            <table class="table table-dark table-sm">
-                <thead>
-                    <tr>
-                        <th>Asset</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="profileHoldings"></tbody>
-            </table>
+      </div>
+
+      <!-- Bottom Nav -->
+      <nav class="bottom-nav" style="flex-shrink:0;">
+        <a href="dashboard.html"><i class="fa fa-house"></i><span>Home</span></a>
+        <a href="#"><i class="fa fa-chart-line"></i><span>Chart</span></a>
+        <a href="#"><i class="fa fa-globe"></i><span>Explore</span></a>
+        <a href="#"><i class="fa fa-wallet"></i><span>Wallet</span></a>
+        <a href="settings.html" class="active"><i class="fa fa-gear"></i><span>Settings</span></a>
+      </nav>
+    </div>
+
+    <!-- ── CHANGE PIN SHEET ────────────────────────────────── -->
+    <div class="sheet-overlay" id="changePinSheet" onclick="if(event.target===this)closeSheet('changePinSheet')">
+      <div class="sheet-card">
+        <div class="sheet-header">
+          <h3>Change Password</h3>
+          <button class="sheet-close" onclick="closeSheet('changePinSheet')">&#x2715;</button>
         </div>
-        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.4s;">
-            <h5 class="mb-2">Change Password</h5>
-            <form id="pwdChangeForm" class="row g-3">
-                <div class="col-12"><label class="form-label">Current Password</label><input type="password"
-                        class="form-control" name="current" required /></div>
-                <div class="col-12"><label class="form-label">New Password</label><input type="password"
-                        class="form-control" name="new" required /></div>
-                <div class="col-12"><label class="form-label">Confirm New Password</label><input type="password"
-                        class="form-control" name="confirm" required /></div>
-                <div class="col-12"><button class="btn btn-primary mt-2" type="submit"><i class="fa fa-key"></i>
-                        Change Password</button></div>
-            </form>
+        <div class="form-group mb-16">
+          <label class="form-label">Current PIN</label>
+          <input type="password" id="currentPin" class="nova-input" placeholder="Current password" />
         </div>
-        <div class="form-card mb-4 slide-in-left" style="animation-delay: 0.5s;">
-            <h5>Password Strength</h5><input type="password" id="pwd" class="form-control"
-                placeholder="Enter a password" />
-            <div id="passwordStrength" class="mt-2">
-                <div class="bar"></div>
-            </div><small class="text-secondary">Increase length and mix characters for a stronger score.</small>
-            <hr class="border-secondary my-4" />
-            <h5>Two-Factor Authentication (Demo)</h5>
-            <p class="text-secondary">Simulated toggle; doesn't send codes.</p>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="twofaSwitch"><label
-                    class="form-check-label" for="twofaSwitch">Enable 2FA</label></div><small id="twofaStatus"
-                class="text-secondary mt-2 d-block">2FA disabled</small>
+        <div class="form-group mb-16">
+          <label class="form-label">New Password</label>
+          <input type="password" id="newPin" class="nova-input" placeholder="New password (min 8 chars)" />
         </div>
-        <div class="d-flex justify-content-center mt-4 mb-5">
-            <button id="logoutBtn" class="btn btn-danger btn-lg px-5"><i
-                    class="fa fa-right-from-bracket me-2"></i>Logout</button>
+        <div class="form-group mb-20">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" id="confirmPin" class="nova-input" placeholder="Confirm new password" />
         </div>
-    </main>
-    <script src="../js/prices.js"></script>
-    <script src="../js/script.js"></script>
-    <script>
-        // Profile info and holdings summary
-        document.addEventListener('DOMContentLoaded', () => {
-            // Username and session
-            const session = JSON.parse(localStorage.getItem('nv_session') || 'null');
-            document.getElementById('profileUsername').textContent = session ? session.username : '--';
-            document.getElementById('profileSessionTs').textContent = session ? new Date(session.ts).toLocaleString() : '--';
-            // Holdings summary
-            const key = session ? ('nv_holdings_' + session.username) : 'nw_holdings';
-            const holdings = JSON.parse(localStorage.getItem(key) || 'null') || { BTC: 0, ETH: 0, SOL: 0 };
-            const tbody = document.getElementById('profileHoldings');
-            tbody.innerHTML = '';
-            Object.entries(holdings).forEach(([asset, amount]) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${asset}</td><td>${amount}</td>`;
-                tbody.appendChild(tr);
-            });
-            // Password strength and 2FA
-            const sw = document.getElementById('twofaSwitch');
-            const status = document.getElementById('twofaStatus');
-            const saved = localStorage.getItem('nw_2fa') === 'true';
-            sw.checked = saved;
-            status.textContent = saved ? '2FA enabled' : '2FA disabled';
-            sw.addEventListener('change', () => {
-                localStorage.setItem('nw_2fa', sw.checked);
-                status.textContent = sw.checked ? '2FA enabled' : '2FA disabled';
-            });
-        });
-    </script>
+        <div id="pinSheetError" class="error-msg mb-16" style="display:none;">
+          <i class="fa fa-triangle-exclamation"></i>
+          <span id="pinSheetErrMsg"></span>
+        </div>
+        <button class="btn btn-primary" onclick="doChangePin()">
+          <i class="fa fa-key"></i> Update Password
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notify-fixed" id="notifyArea"></div>
+  </div><!-- /phone-frame -->
+
+  <script>
+    const ASSETS = [
+      { sym: 'BTC', cgId: 'bitcoin', price: 65000 },
+      { sym: 'ETH', cgId: 'ethereum', price: 3400 },
+      { sym: 'BNB', cgId: 'binancecoin', price: 590 },
+      { sym: 'SOL', cgId: 'solana', price: 175 },
+      { sym: 'TON', cgId: 'the-open-network', price: 5.8 },
+      { sym: 'TRX', cgId: 'tron', price: 0.135 },
+      { sym: 'SUI', cgId: 'sui', price: 1.45 },
+      { sym: 'LTC', cgId: 'litecoin', price: 88 },
+      { sym: 'USDT', cgId: 'tether', price: 1 },
+      { sym: 'USDC', cgId: 'usd-coin', price: 1 },
+    ];
+    const DEFAULT_H = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, TON: 0, TRX: 0, SUI: 0, LTC: 0, USDT: 0, USDC: 0 };
+    function getH() {
+      const stored = JSON.parse(localStorage.getItem('nv_holdings') || '{}');
+      return Object.assign({}, DEFAULT_H, stored);
+    }
+    function renderBalance() {
+      const h = getH(), total = ASSETS.reduce((s, a) => s + (h[a.sym] || 0) * a.price, 0);
+      document.getElementById('settingsBalance').textContent =
+        '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Balance — fetch live prices then render (fallback to defaults if offline)
+    (function () {
+      renderBalance(); // show immediately with fallback prices
+      const ids = ASSETS.map(a => a.cgId).join(',');
+      fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&precision=6`)
+        .then(r => r.json())
+        .then(data => {
+          ASSETS.forEach(a => { if (data[a.cgId] && data[a.cgId].usd) a.price = data[a.cgId].usd; });
+          renderBalance();
+        })
+        .catch(() => { }); // silently keep fallback prices
+    })();
+
+    // 2FA
+    const tfaTog = document.getElementById('tfaToggle');
+    const tfaLbl = document.getElementById('tfaLabel');
+    let tfaOn = localStorage.getItem('nv_2fa') === 'true';
+    function applyTFA() { tfaTog.classList.toggle('on', tfaOn); tfaLbl.textContent = tfaOn ? 'On' : 'Off'; }
+    applyTFA();
+    function toggleTwoFA() { tfaOn = !tfaOn; localStorage.setItem('nv_2fa', tfaOn); applyTFA(); notify(tfaOn ? '2FA Enabled' : '2FA Disabled', 'success'); }
+
+    // Sheets
+    function openSheet(id) { document.getElementById(id).classList.add('open'); }
+    function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+
+    // Change PIN
+    function doChangePin() {
+      const cur = document.getElementById('currentPin').value;
+      const nxt = document.getElementById('newPin').value;
+      const cnf = document.getElementById('confirmPin').value;
+      const errEl = document.getElementById('pinSheetError');
+      const errMsg = document.getElementById('pinSheetErrMsg');
+      const saved = localStorage.getItem('nv_password') || '';
+      function showErr(m) { errMsg.textContent = m; errEl.style.display = 'flex'; return false; }
+      if (saved && cur !== saved) return showErr('Incorrect current password');
+      if (!nxt || nxt.length < 8) return showErr('New password must be at least 8 characters');
+      if (nxt !== cnf) return showErr('Passwords do not match');
+      localStorage.setItem('nv_password', nxt);
+      closeSheet('changePinSheet');
+      ['currentPin', 'newPin', 'confirmPin'].forEach(id => document.getElementById(id).value = '');
+      errEl.style.display = 'none';
+      notify('Password updated successfully', 'success');
+    }
+
+    // Logout / Reset
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (confirm('Log out?')) location.href = '../index.html';
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Reset wallet? All local data will be cleared.')) { localStorage.clear(); location.href = '../index.html'; }
+    });
+
+    // Notify
+    function notify(msg, type) {
+      const el = document.createElement('div');
+      el.className = 'notify notify-' + (type || 'success');
+      el.style.pointerEvents = 'all';
+      el.innerHTML = `<i class="fa fa-${type === 'error' ? 'triangle-exclamation' : 'circle-check'}"></i> ${msg}`;
+      document.getElementById('notifyArea').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+  </script>
 </body>
 
 </html>
