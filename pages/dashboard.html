@@ -491,7 +491,6 @@
             <button class="active" onclick="switchTab(this,'cryptoPanel')">Crypto</button>
             <button onclick="switchTab(this,'nftPanel')">NFTs</button>
             <button onclick="switchTab(this,'defiPanel')">DeFi</button>
-            <button onclick="switchTab(this,'activityPanel')">Activity</button>
           </div>
         </div>
 
@@ -503,6 +502,16 @@
             <span style="font-size:12px;color:var(--muted);" id="lastUpdated">Fetching prices...</span>
           </div>
           <div id="assetList"></div>
+
+          <!-- Recent Activity -->
+          <div style="margin-top:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span
+                style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Recent
+                Activity</span>
+            </div>
+            <div id="txList"></div>
+          </div>
         </div>
 
         <!-- NFT panel -->
@@ -513,11 +522,6 @@
         <!-- DeFi panel -->
         <div class="px-24" id="defiPanel" style="display:none;">
           <div class="empty-state"><i class="fa fa-seedling"></i>No active DeFi positions.</div>
-        </div>
-
-        <!-- Activity panel -->
-        <div class="px-24" id="activityPanel" style="display:none;">
-          <div id="txList"></div>
         </div>
       </div>
 
@@ -753,6 +757,7 @@
         `<i class="fa fa-${arrow}"></i> ${totalChange >= 0 ? '+' : ''}$${fmt(Math.abs(totalChange), 2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%) today`;
 
       updateBuyPreview();
+      renderTxList();
     }
 
     function fmt(n, dp) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }); }
@@ -768,11 +773,10 @@
     function switchTab(btn, panel) {
       document.querySelectorAll('#tabBar button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      ['cryptoPanel', 'nftPanel', 'defiPanel', 'activityPanel'].forEach(id => {
+      ['cryptoPanel', 'nftPanel', 'defiPanel'].forEach(id => {
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
       const t = document.getElementById(panel); if (t) t.style.display = '';
-      if (panel === 'activityPanel') renderTxList();
     }
 
     /* ══ SHEETS ══════════════════════════════════════════════════════ */
