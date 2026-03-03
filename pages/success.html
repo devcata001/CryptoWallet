@@ -1,22 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – You're All Set!</title>
-  <link rel="stylesheet" href="../css/nova.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/nova.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    .success-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;}
-    .pulse-ring{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:28px;}
-    .pulse-ring::before,.pulse-ring::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(61,255,32,.3);animation:expand 2s ease-out infinite;}
-    .pulse-ring::before{width:100px;height:100px;animation-delay:0s;}
-    .pulse-ring::after{width:130px;height:130px;animation-delay:.6s;}
-    @keyframes expand{0%{transform:scale(1);opacity:.8;}100%{transform:scale(1.5);opacity:0;}}
-    .shield-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0d2b0d,#1a4a1a);border:2px solid rgba(61,255,32,.5);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 32px rgba(61,255,32,.35);z-index:1;}
-    .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+    .success-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 28px;
+      text-align: center;
+    }
+
+    .pulse-ring {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .pulse-ring::before,
+    .pulse-ring::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(61, 255, 32, .3);
+      animation: expand 2s ease-out infinite;
+    }
+
+    .pulse-ring::before {
+      width: 100px;
+      height: 100px;
+      animation-delay: 0s;
+    }
+
+    .pulse-ring::after {
+      width: 130px;
+      height: 130px;
+      animation-delay: .6s;
+    }
+
+    @keyframes expand {
+      0% {
+        transform: scale(1);
+        opacity: .8;
+      }
+
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    .shield-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d2b0d, #1a4a1a);
+      border: 2px solid rgba(61, 255, 32, .5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 0 32px rgba(61, 255, 32, .35);
+      z-index: 1;
+    }
+
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
   </style>
 </head>
+
 <body>
   <div class="phone-frame" style="position:relative;">
     <div class="screen" style="display:flex;flex-direction:column;height:100%;">
@@ -25,12 +93,13 @@
           <div class="shield-icon"><i class="fa fa-shield-halved" style="color:var(--green);"></i></div>
         </div>
         <h1 id="successTitle" style="font-size:26px;font-weight:800;margin-bottom:12px;">You're All Set!</h1>
-        <p id="successDesc" style="color:var(--muted);font-size:14px;max-width:280px;line-height:1.7;margin-bottom:32px;">
+        <p id="successDesc"
+          style="color:var(--muted);font-size:14px;max-width:280px;line-height:1.7;margin-bottom:32px;">
           Your Nova Wallet is created and secured. You are now in full control of your crypto.
         </p>
         <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;">
           <a class="btn btn-primary" id="exploreBtn" href="dashboard.html">
-            <i class="fa fa-rocket"></i> Start Exploring
+            <i class="fa fa-arrow-right"></i> Start Exploring
           </a>
           <a class="btn btn-ghost" href="confirm.html">
             <i class="fa fa-key"></i> Back up recovery phrase
@@ -41,16 +110,17 @@
   </div>
   <script>
     const p = new URLSearchParams(location.search);
-    if(p.get('mode')==='import'){
+    if (p.get('mode') === 'import') {
       document.getElementById('successTitle').textContent = 'Wallet Imported!';
-      document.getElementById('successDesc').textContent  = 'Your wallet has been imported successfully. Start exploring Nova.';
-      document.querySelector('.btn-ghost').style.display  = 'none';
+      document.getElementById('successDesc').textContent = 'Your wallet has been imported successfully. Start exploring Nova.';
+      document.querySelector('.btn-ghost').style.display = 'none';
     }
-    if(p.get('mode')==='skip'){
+    if (p.get('mode') === 'skip') {
       document.getElementById('successTitle').textContent = 'Wallet Created!';
-      document.getElementById('successDesc').textContent  = 'Remember to back up your Secret Recovery Phrase from Settings before you add funds.';
+      document.getElementById('successDesc').textContent = 'Remember to back up your Secret Recovery Phrase from Settings before you add funds.';
     }
-    localStorage.setItem('nv_unlocked','1');
+    localStorage.setItem('nv_unlocked', '1');
   </script>
 </body>
+
 </html>

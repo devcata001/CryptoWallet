@@ -185,21 +185,21 @@
             <div class="settings-label">Wallet</div>
             <div class="settings-item" onclick="location.href='confirm.html'">
               <div class="left">
-                <i class="fa fa-seedling" style="background:rgba(255,200,61,.1);color:#ffc83d;"></i>
+                <i class="fa fa-shield-halved" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Recovery Phrase</div>
               </div>
               <div class="right"><i class="fa fa-chevron-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Private key — demo only')">
               <div class="left">
-                <i class="fa fa-key" style="background:rgba(255,200,61,.1);color:#ffc83d;"></i>
+                <i class="fa fa-key" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Export Private Key</div>
               </div>
               <div class="right"><i class="fa fa-chevron-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Networks — coming soon')">
               <div class="left">
-                <i class="fa fa-network-wired" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <i class="fa fa-network-wired" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Networks</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">Mainnet</span><i
@@ -220,7 +220,7 @@
             </div>
             <div class="settings-item" onclick="alert('Language — coming soon')">
               <div class="left">
-                <i class="fa fa-globe" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <i class="fa fa-globe" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Language</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">English</span><i
@@ -228,7 +228,7 @@
             </div>
             <div class="settings-item" onclick="alert('Notifications — coming soon')">
               <div class="left">
-                <i class="fa fa-bell" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <i class="fa fa-bell" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Notifications</div>
               </div>
               <div class="right"><i class="fa fa-chevron-right"></i></div>
@@ -240,7 +240,7 @@
             <div class="settings-label">Support</div>
             <div class="settings-item" onclick="alert('Help — coming soon')">
               <div class="left">
-                <i class="fa fa-circle-question" style="background:rgba(61,125,255,.12);color:#3d7dff;"></i>
+                <i class="fa fa-circle-question" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Help & Support</div>
               </div>
               <div class="right"><i class="fa fa-chevron-right"></i></div>
@@ -315,14 +315,10 @@
       { sym: 'ETH', cgId: 'ethereum', price: 3400 },
       { sym: 'BNB', cgId: 'binancecoin', price: 590 },
       { sym: 'SOL', cgId: 'solana', price: 175 },
-      { sym: 'TON', cgId: 'the-open-network', price: 5.8 },
-      { sym: 'TRX', cgId: 'tron', price: 0.135 },
-      { sym: 'SUI', cgId: 'sui', price: 1.45 },
-      { sym: 'LTC', cgId: 'litecoin', price: 88 },
       { sym: 'USDT', cgId: 'tether', price: 1 },
       { sym: 'USDC', cgId: 'usd-coin', price: 1 },
     ];
-    const DEFAULT_H = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, TON: 0, TRX: 0, SUI: 0, LTC: 0, USDT: 0, USDC: 0 };
+    const DEFAULT_H = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, USDT: 0, USDC: 0 };
     function getH() {
       const stored = JSON.parse(localStorage.getItem('nv_holdings') || '{}');
       return Object.assign({}, DEFAULT_H, stored);

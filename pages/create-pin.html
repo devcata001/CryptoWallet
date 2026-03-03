@@ -1,94 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>Nova Wallet – Confirm Recovery Phrase</title>
-  <link rel="stylesheet" href="../css/nova.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    .quiz-slot{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-    .quiz-slot .num-badge{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:var(--green);}
-    .quiz-slot input{flex:1;}
-    .quiz-slot .ok-icon{width:24px;font-size:16px;flex-shrink:0;;text-align:center;}
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Nova Wallet – Confirm Recovery Phrase</title>
+    <link rel="stylesheet" href="../css/nova.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        .quiz-slot {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .quiz-slot .num-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: var(--green);
+        }
+
+        .quiz-slot input {
+            flex: 1;
+        }
+
+        .quiz-slot .ok-icon {
+            width: 24px;
+            font-size: 16px;
+            flex-shrink: 0;
+            ;
+            text-align: center;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="phone-frame">
-    <div class="screen" style="display:flex;flex-direction:column;height:100%;">
-      <nav class="top-nav" style="flex-shrink:0;">
-        <a href="confirm.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
-        <div class="top-nav-title"><h4>Confirm SRP</h4></div>
-        <div style="width:36px;"></div>
-      </nav>
-      <div style="display:flex;justify-content:center;gap:6px;padding:4px 0 16px;">
-        <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
-        <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
-        <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
-        <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
-      </div>
-      <div style="flex:1;overflow-y:auto;padding:0 24px 32px;" class="fade-in">
-        <p style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;">
-          Enter the missing words from your Secret Recovery Phrase to confirm you saved it correctly.
-        </p>
-        <div id="quizSlots"></div>
-        <div id="quizError" class="error-msg mb-16" style="display:none;">
-          <i class="fa fa-triangle-exclamation"></i> <span id="quizErrMsg">One or more words are incorrect.</span>
+    <div class="phone-frame">
+        <div class="screen" style="display:flex;flex-direction:column;height:100%;">
+            <nav class="top-nav" style="flex-shrink:0;">
+                <a href="confirm.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
+                <div class="top-nav-title">
+                    <h4>Confirm SRP</h4>
+                </div>
+                <div style="width:36px;"></div>
+            </nav>
+            <div style="display:flex;justify-content:center;gap:6px;padding:4px 0 16px;">
+                <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
+                <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
+                <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
+                <div style="width:24px;height:4px;border-radius:2px;background:var(--green);"></div>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:0 24px 32px;" class="fade-in">
+                <p style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;">
+                    Enter the missing words from your Secret Recovery Phrase to confirm you saved it correctly.
+                </p>
+                <div id="quizSlots"></div>
+                <div id="quizError" class="error-msg mb-16" style="display:none;">
+                    <i class="fa fa-triangle-exclamation"></i> <span id="quizErrMsg">One or more words are
+                        incorrect.</span>
+                </div>
+                <button class="btn btn-primary" onclick="verify()">
+                    <i class="fa fa-check"></i> Confirm
+                </button>
+            </div>
         </div>
-        <button class="btn btn-primary" onclick="verify()">
-          <i class="fa fa-check-double"></i> Confirm
-        </button>
-      </div>
     </div>
-  </div>
-  <script>
-    const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
-    if(!srp.length) location.href = 'onboarding.html';
+    <script>
+        const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
+        if (!srp.length) location.href = 'onboarding.html';
 
-    // pick 3 unique random positions to quiz
-    const positions = [];
-    while(positions.length < 3){
-      const p = Math.floor(Math.random()*12);
-      if(!positions.includes(p)) positions.push(p);
-    }
-    positions.sort((a,b)=>a-b);
+        // pick 3 unique random positions to quiz
+        const positions = [];
+        while (positions.length < 3) {
+            const p = Math.floor(Math.random() * 12);
+            if (!positions.includes(p)) positions.push(p);
+        }
+        positions.sort((a, b) => a - b);
 
-    const slots = document.getElementById('quizSlots');
-    positions.forEach(p=>{
-      slots.innerHTML += `
+        const slots = document.getElementById('quizSlots');
+        positions.forEach(p => {
+            slots.innerHTML += `
       <div class="quiz-slot">
-        <div class="num-badge">${p+1}</div>
+        <div class="num-badge">${p + 1}</div>
         <div class="input-wrap" style="flex:1;position:relative;">
-          <input type="text" class="nova-input" id="slot_${p}" placeholder="Word #${p+1}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" oninput="liveCheck(${p})"/>
+          <input type="text" class="nova-input" id="slot_${p}" placeholder="Word #${p + 1}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" oninput="liveCheck(${p})"/>
         </div>
         <div class="ok-icon" id="ok_${p}"></div>
       </div>`;
-    });
+        });
 
-    function liveCheck(p){
-      const v = document.getElementById('slot_'+p).value.trim().toLowerCase();
-      const ok = document.getElementById('ok_'+p);
-      if(!v){ ok.innerHTML=''; return; }
-      ok.innerHTML = v === srp[p]
-        ? '<i class="fa fa-circle-check" style="color:var(--green);"></i>'
-        : '<i class="fa fa-circle-xmark" style="color:var(--error);"></i>';
-    }
+        function liveCheck(p) {
+            const v = document.getElementById('slot_' + p).value.trim().toLowerCase();
+            const ok = document.getElementById('ok_' + p);
+            if (!v) { ok.innerHTML = ''; return; }
+            ok.innerHTML = v === srp[p]
+                ? '<i class="fa fa-circle-check" style="color:var(--green);"></i>'
+                : '<i class="fa fa-circle-xmark" style="color:var(--error);"></i>';
+        }
 
-    function verify(){
-      const errEl = document.getElementById('quizError');
-      errEl.style.display='none';
-      let allCorrect = true;
-      positions.forEach(p=>{
-        const v = (document.getElementById('slot_'+p).value||'').trim().toLowerCase();
-        if(v !== srp[p]) allCorrect=false;
-      });
-      if(!allCorrect){
-        document.getElementById('quizErrMsg').textContent='One or more words are incorrect — check your phrase.';
-        errEl.style.display='flex'; return;
-      }
-      localStorage.setItem('nv_unlocked','1');
-      location.href='success.html';
-    }
-  </script>
+        function verify() {
+            const errEl = document.getElementById('quizError');
+            errEl.style.display = 'none';
+            let allCorrect = true;
+            positions.forEach(p => {
+                const v = (document.getElementById('slot_' + p).value || '').trim().toLowerCase();
+                if (v !== srp[p]) allCorrect = false;
+            });
+            if (!allCorrect) {
+                document.getElementById('quizErrMsg').textContent = 'One or more words are incorrect — check your phrase.';
+                errEl.style.display = 'flex'; return;
+            }
+            localStorage.setItem('nv_unlocked', '1');
+            location.href = 'success.html';
+        }
+    </script>
 </body>
+
 </html>

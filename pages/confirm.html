@@ -1,26 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Secret Recovery Phrase</title>
-  <link rel="stylesheet" href="../css/nova.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/nova.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    .srp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;}
-    .srp-word{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;font-size:13px;font-weight:600;position:relative;}
-    .srp-word .num{position:absolute;top:3px;left:6px;font-size:10px;color:var(--muted);font-weight:400;}
-    .srp-blur .srp-word{filter:blur(6px);user-select:none;}
-    .reveal-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;cursor:pointer;}
-    .srp-wrap{position:relative;}
+    .srp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .srp-word {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .srp-word .num {
+      position: absolute;
+      top: 3px;
+      left: 6px;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .srp-blur .srp-word {
+      filter: blur(6px);
+      user-select: none;
+    }
+
+    .reveal-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .srp-wrap {
+      position: relative;
+    }
   </style>
 </head>
+
 <body>
   <div class="phone-frame">
     <div class="screen" style="display:flex;flex-direction:column;height:100%;">
       <nav class="top-nav" style="flex-shrink:0;">
         <a href="email.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
-        <div class="top-nav-title"><h4>Recovery Phrase</h4></div>
+        <div class="top-nav-title">
+          <h4>Recovery Phrase</h4>
+        </div>
         <div style="width:36px;"></div>
       </nav>
       <div style="display:flex;justify-content:center;gap:6px;padding:4px 0 16px;">
@@ -31,64 +76,73 @@
       </div>
       <div style="flex:1;overflow-y:auto;padding:0 20px 32px;" class="fade-in">
         <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;text-align:center;">
-          Write these 12 words on paper in order.<br/>
+          Write these 12 words on paper in order.<br />
           <span style="color:var(--error);">Store them somewhere safe and secret.</span>
         </p>
         <div class="srp-wrap">
           <div class="srp-grid srp-blur" id="srpGrid"></div>
           <div class="reveal-overlay" id="revealOverlay" onclick="revealSRP()">
-            <div style="background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;padding:16px 24px;text-align:center;">
+            <div
+              style="background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;padding:16px 24px;text-align:center;">
               <i class="fa fa-eye" style="font-size:24px;color:var(--green);display:block;margin-bottom:8px;"></i>
               <div style="font-weight:700;font-size:14px;">Tap to reveal</div>
               <div style="font-size:12px;color:var(--muted);margin-top:4px;">Make sure no one is watching</div>
             </div>
           </div>
         </div>
-        <div style="background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.2);border-radius:12px;padding:14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
-          <i class="fa fa-triangle-exclamation" style="color:#ffc83d;margin-top:2px;flex-shrink:0;"></i>
-          <span style="font-size:12px;color:var(--muted2);line-height:1.5;">Do not screenshot this page. Screenshots are stored in the cloud and can be accessed by others.</span>
+        <div
+          style="background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.2);border-radius:12px;padding:14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+          <i class="fa fa-triangle-exclamation" style="color:var(--error);margin-top:2px;flex-shrink:0;"></i>
+          <span style="font-size:12px;color:var(--muted2);line-height:1.5;">Do not screenshot this page. Screenshots are
+            stored in the cloud and can be accessed by others.</span>
         </div>
-        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-bottom:20px;" id="confirmLabel" style="opacity:.4;pointer-events:none;">
-          <input type="checkbox" id="savedBox" style="margin-top:3px;accent-color:var(--green);width:16px;height:16px;flex-shrink:0;" onchange="toggleBtn()"/>
-          <span style="font-size:13px;color:var(--muted);line-height:1.6;">I have written down and safely stored my Secret Recovery Phrase.</span>
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-bottom:20px;" id="confirmLabel"
+          style="opacity:.4;pointer-events:none;">
+          <input type="checkbox" id="savedBox"
+            style="margin-top:3px;accent-color:var(--green);width:16px;height:16px;flex-shrink:0;"
+            onchange="toggleBtn()" />
+          <span style="font-size:13px;color:var(--muted);line-height:1.6;">I have written down and safely stored my
+            Secret Recovery Phrase.</span>
         </label>
-        <button class="btn btn-primary" id="nextBtn" onclick="location.href='create-pin.html'" disabled style="opacity:.4;cursor:not-allowed;">
+        <button class="btn btn-primary" id="nextBtn" onclick="location.href='create-pin.html'" disabled
+          style="opacity:.4;cursor:not-allowed;">
           <i class="fa fa-check-circle"></i> I saved it — next step
         </button>
       </div>
     </div>
   </div>
   <script>
-    const BIP39 = ['abandon','ability','able','about','above','absent','absorb','abstract','absurd','abuse','access','accident','account','accuse','achieve','acid','acoustic','acquire','across','act','action','actor','actress','actual','adapt','add','addict','address','adjust','admit','adult','advance','advice','aerobic','afford','afraid','again','age','agent','agree','ahead','aim','air','airport','aisle','alarm','album','alcohol','alert','alien','all','alley','allow','almost','alone','alpha','already','also','alter','always','amateur','amazing','among','amount','amused','analyst','anchor','ancient','anger','angle','angry','animal','ankle','announce','annual','another','answer','antenna','antique','anxiety','any','apart','apology','appear','apple','approve','april','arch','arctic','area','arena','argue','arm','armed','armor','army','around','arrange','arrest','arrive','arrow','art','artifact','artist','artwork','ask','aspect','assault','asset','assist','assume','asthma','athlete','atom','attack','attend','attitude','attract','auction','audit','august','aunt','author','auto','autumn','average','avocado','avoid','awake','aware','away','awesome','awful','awkward','axis','baby','balance','bamboo','banana','banner','barely','bargain','barrel','base','basic','basket','battle','beach','beauty','because','become','beef','before','begin','behave','behind','believe','below','belt','bench','benefit','best','betray','better','between','beyond','bicycle','bid','bike','bind','biology','bird','birth','bitter','black','blade','blame','blanket','blast','bleak','bless','blind','blood','blossom','blouse','blue','blur','blush','board','boat','body','boil','bomb','bone','book','boost','border','boring','borrow','boss','bottom','bounce','box','boy','bracket','brain','brand','brave','bread','breeze','brick','bridge','brief','bright','bring','brisk','broccoli','broken','bronze','broom','brother','brown','brush','bubble','buddy','budget','buffalo','build','bulb','bulk','bullet','bundle','bunker','burden','burger','burst','bus','business','busy','butter','buyer','buzz']
-    
-    function genSRP(){
-      let srp = JSON.parse(localStorage.getItem('nv_srp')||'null');
-      if(!srp){
-        srp = Array.from({length:12}, ()=>BIP39[Math.floor(Math.random()*BIP39.length)]);
+    const BIP39 = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual', 'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance', 'advice', 'aerobic', 'afford', 'afraid', 'again', 'age', 'agent', 'agree', 'ahead', 'aim', 'air', 'airport', 'aisle', 'alarm', 'album', 'alcohol', 'alert', 'alien', 'all', 'alley', 'allow', 'almost', 'alone', 'alpha', 'already', 'also', 'alter', 'always', 'amateur', 'amazing', 'among', 'amount', 'amused', 'analyst', 'anchor', 'ancient', 'anger', 'angle', 'angry', 'animal', 'ankle', 'announce', 'annual', 'another', 'answer', 'antenna', 'antique', 'anxiety', 'any', 'apart', 'apology', 'appear', 'apple', 'approve', 'april', 'arch', 'arctic', 'area', 'arena', 'argue', 'arm', 'armed', 'armor', 'army', 'around', 'arrange', 'arrest', 'arrive', 'arrow', 'art', 'artifact', 'artist', 'artwork', 'ask', 'aspect', 'assault', 'asset', 'assist', 'assume', 'asthma', 'athlete', 'atom', 'attack', 'attend', 'attitude', 'attract', 'auction', 'audit', 'august', 'aunt', 'author', 'auto', 'autumn', 'average', 'avocado', 'avoid', 'awake', 'aware', 'away', 'awesome', 'awful', 'awkward', 'axis', 'baby', 'balance', 'bamboo', 'banana', 'banner', 'barely', 'bargain', 'barrel', 'base', 'basic', 'basket', 'battle', 'beach', 'beauty', 'because', 'become', 'beef', 'before', 'begin', 'behave', 'behind', 'believe', 'below', 'belt', 'bench', 'benefit', 'best', 'betray', 'better', 'between', 'beyond', 'bicycle', 'bid', 'bike', 'bind', 'biology', 'bird', 'birth', 'bitter', 'black', 'blade', 'blame', 'blanket', 'blast', 'bleak', 'bless', 'blind', 'blood', 'blossom', 'blouse', 'blue', 'blur', 'blush', 'board', 'boat', 'body', 'boil', 'bomb', 'bone', 'book', 'boost', 'border', 'boring', 'borrow', 'boss', 'bottom', 'bounce', 'box', 'boy', 'bracket', 'brain', 'brand', 'brave', 'bread', 'breeze', 'brick', 'bridge', 'brief', 'bright', 'bring', 'brisk', 'broccoli', 'broken', 'bronze', 'broom', 'brother', 'brown', 'brush', 'bubble', 'buddy', 'budget', 'buffalo', 'build', 'bulb', 'bulk', 'bullet', 'bundle', 'bunker', 'burden', 'burger', 'burst', 'bus', 'business', 'busy', 'butter', 'buyer', 'buzz']
+
+    function genSRP() {
+      let srp = JSON.parse(localStorage.getItem('nv_srp') || 'null');
+      if (!srp) {
+        srp = Array.from({ length: 12 }, () => BIP39[Math.floor(Math.random() * BIP39.length)]);
         localStorage.setItem('nv_srp', JSON.stringify(srp));
       }
       return srp;
     }
     const words = genSRP();
-    const grid  = document.getElementById('srpGrid');
-    words.forEach((w,i)=>{
-      grid.innerHTML += `<div class="srp-word"><span class="num">${i+1}</span>${w}</div>`;
+    const grid = document.getElementById('srpGrid');
+    words.forEach((w, i) => {
+      grid.innerHTML += `<div class="srp-word"><span class="num">${i + 1}</span>${w}</div>`;
     });
     let revealed = false;
-    function revealSRP(){
+    function revealSRP() {
       revealed = true;
       document.getElementById('srpGrid').classList.remove('srp-blur');
-      document.getElementById('revealOverlay').style.display='none';
-      document.getElementById('confirmLabel').style.opacity='1';
-      document.getElementById('confirmLabel').style.pointerEvents='auto';
+      document.getElementById('revealOverlay').style.display = 'none';
+      document.getElementById('confirmLabel').style.opacity = '1';
+      document.getElementById('confirmLabel').style.pointerEvents = 'auto';
     }
-    function toggleBtn(){
+    function toggleBtn() {
       const btn = document.getElementById('nextBtn');
       const checked = document.getElementById('savedBox').checked;
       btn.disabled = !checked;
-      btn.style.opacity = checked?'1':'0.4';
-      btn.style.cursor  = checked?'pointer':'not-allowed';
+      btn.style.opacity = checked ? '1' : '0.4';
+      btn.style.cursor = checked ? 'pointer' : 'not-allowed';
     }
   </script>
 </body>
+
 </html>

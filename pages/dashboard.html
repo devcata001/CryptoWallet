@@ -550,10 +550,6 @@
               <option value="ETH" selected>ETH – Ethereum</option>
               <option value="BNB">BNB – BNB</option>
               <option value="SOL">SOL – Solana</option>
-              <option value="TON">TON – Toncoin</option>
-              <option value="TRX">TRX – Tron</option>
-              <option value="SUI">SUI – Sui</option>
-              <option value="LTC">LTC – Litecoin</option>
               <option value="USDT">USDT – Tether</option>
               <option value="USDC">USDC – USD Coin</option>
             </select>
@@ -606,10 +602,6 @@
               <option value="ETH" selected>Ethereum (ETH)</option>
               <option value="BNB">BNB (BNB)</option>
               <option value="SOL">Solana (SOL)</option>
-              <option value="TON">Toncoin (TON)</option>
-              <option value="TRX">Tron (TRX)</option>
-              <option value="SUI">Sui (SUI)</option>
-              <option value="LTC">Litecoin (LTC)</option>
               <option value="USDT">Tether (USDT)</option>
               <option value="USDC">USD Coin (USDC)</option>
             </select>
@@ -648,15 +640,11 @@
       { sym: 'ETH', name: 'Ethereum', cgId: 'ethereum', img: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', color: '#627EEA', price: 3400, change24h: 1.8 },
       { sym: 'BNB', name: 'BNB', cgId: 'binancecoin', img: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', color: '#F3BA2F', price: 590, change24h: 0.7 },
       { sym: 'SOL', name: 'Solana', cgId: 'solana', img: 'https://assets.coingecko.com/coins/images/4128/small/solana.png', color: '#9945FF', price: 175, change24h: 5.2 },
-      { sym: 'TON', name: 'Toncoin', cgId: 'the-open-network', img: 'https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png', color: '#0098EA', price: 5.8, change24h: 3.1 },
-      { sym: 'TRX', name: 'Tron', cgId: 'tron', img: 'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png', color: '#E50915', price: 0.135, change24h: -0.9 },
-      { sym: 'SUI', name: 'Sui', cgId: 'sui', img: 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png', color: '#6CDCFF', price: 1.45, change24h: 4.6 },
-      { sym: 'LTC', name: 'Litecoin', cgId: 'litecoin', img: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png', color: '#BFBBBB', price: 88, change24h: 1.1 },
       { sym: 'USDT', name: 'Tether', cgId: 'tether', img: 'https://assets.coingecko.com/coins/images/325/small/Tether.png', color: '#26A17B', price: 1.00, change24h: 0.02 },
       { sym: 'USDC', name: 'USD Coin', cgId: 'usd-coin', img: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png', color: '#2775CA', price: 1.00, change24h: 0.01 },
     ];
 
-    const DEFAULT_HOLDINGS = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, TON: 0, TRX: 0, SUI: 0, LTC: 0, USDT: 0, USDC: 0 };
+    const DEFAULT_HOLDINGS = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, USDT: 0, USDC: 0 };
 
     function getH() {
       const stored = JSON.parse(localStorage.getItem('nv_holdings') || '{}');
@@ -793,10 +781,10 @@
       const a = ASSETS.find(x => x.sym === sym);
       const h = getH();
       if (!a || !amt) { document.getElementById('sendPreview').innerHTML = ''; return; }
-      const fee = (['USDT', 'USDC', 'TRX'].includes(sym)) ? 2 : amt * 0.002;
+      const fee = (['USDT', 'USDC'].includes(sym)) ? 2 : amt * 0.002;
       const usd = amt * a.price;
       document.getElementById('sendPreview').innerHTML =
-        `≈ $${fmt(usd, 2)} USD &nbsp;·&nbsp; Fee ≈ ${['USDT', 'USDC', 'TRX'].includes(sym) ? '$' + fee : fee.toFixed(6) + ' ' + sym} &nbsp;·&nbsp; Held: ${fmt(h[sym] || 0, ['USDT', 'USDC', 'TRX'].includes(sym) ? 2 : 6)} ${sym}`;
+        `≈ $${fmt(usd, 2)} USD &nbsp;·&nbsp; Fee ≈ ${['USDT', 'USDC'].includes(sym) ? '$' + fee : fee.toFixed(6) + ' ' + sym} &nbsp;·&nbsp; Held: ${fmt(h[sym] || 0, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym}`;
     }
     function doSend() {
       const addr = document.getElementById('sendAddr').value.trim();
@@ -816,7 +804,7 @@
       closeSheet('sendSheet');
       document.getElementById('sendAddr').value = '';
       document.getElementById('sendAmt').value = '';
-      openNotify(`Sent ${fmt(amt, ['USDT', 'USDC', 'TRX'].includes(sym) ? 2 : 6)} ${sym} successfully!`, 'success');
+      openNotify(`Sent ${fmt(amt, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym} successfully!`, 'success');
     }
 
     /* ══ BUY ═════════════════════════════════════════════════════════ */
@@ -827,7 +815,7 @@
       if (!a || !usd) { document.getElementById('buyPreview').innerHTML = ''; return; }
       const qty = usd / a.price;
       document.getElementById('buyPreview').innerHTML =
-        `You receive: <span style="color:var(--green);font-weight:700;">${fmt(qty, ['USDT', 'USDC', 'TRX'].includes(sym) ? 2 : 6)} ${sym}</span> &nbsp;·&nbsp; 1 ${sym} = ${fmtPrice(a.price)}`;
+        `You receive: <span style="color:var(--green);font-weight:700;">${fmt(qty, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym}</span> &nbsp;·&nbsp; 1 ${sym} = ${fmtPrice(a.price)}`;
     }
     function doBuy() {
       const sym = document.getElementById('buyAsset').value;
@@ -839,14 +827,14 @@
       h[sym] = (h[sym] || 0) + qty;
       saveH(h); renderAll();
       closeSheet('buySheet');
-      openNotify(`Bought ${fmt(qty, ['USDT', 'USDC', 'TRX'].includes(sym) ? 2 : 6)} ${sym} for $${fmt(usd, 2)}`, 'success');
+      openNotify(`Bought ${fmt(qty, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym} for $${fmt(usd, 2)}`, 'success');
     }
 
     /* ══ PRICE LIST ══════════════════════════════════════════════════ */
     function renderBuyPrices() {
       const html = ASSETS.map(a => {
         const chg = a.change24h, col = chg >= 0 ? '#3DFF20' : 'var(--error)';
-        return `< div class= "price-ticker" >
+        return `<div class="price-ticker">
           <div style="display:flex;align-items:center;gap:8px;">
             <img src="${a.img}" style="width:24px;height:24px;border-radius:50%;background:var(--input-bg);" onerror="this.style.background='${a.color}'" />
             <span style="font-weight:600;font-size:14px;">${a.sym}</span>
