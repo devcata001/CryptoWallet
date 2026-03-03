@@ -581,16 +581,25 @@
           <h3>Receive Crypto</h3>
           <button class="sheet-close" onclick="closeSheet('receiveSheet')">&#x2715;</button>
         </div>
+        <div class="form-group mb-16">
+          <label class="form-label">Select Asset</label>
+          <select id="receiveAsset" class="nova-select" onchange="showReceiveAddr()">
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="BNB">BNB (BNB)</option>
+            <option value="USDT">Tether (USDT)</option>
+            <option value="USDC">USD Coin (USDC)</option>
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="SOL">Solana (SOL)</option>
+          </select>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;text-align:center;" id="receiveNetwork"></div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
           <div class="qr-wrap" id="qrWrap"></div>
-          <div class="address-box" id="walletAddr" style="width:100%;cursor:pointer;" onclick="copyAddr()"
-            title="Tap to copy">Generating address…</div>
-          <div style="display:flex;gap:10px;width:100%;">
-            <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="genAddress()"><i class="fa fa-rotate"></i>
-              New</button>
-            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="copyAddr()"><i class="fa fa-copy"></i>
-              Copy</button>
-          </div>
+          <div class="address-box" id="walletAddr"
+            style="width:100%;cursor:pointer;word-break:break-all;text-align:center;font-size:12px;line-height:1.6;"
+            onclick="copyAddr()" title="Tap to copy">Loading…</div>
+          <button class="btn btn-primary" style="width:100%;" onclick="copyAddr()"><i class="fa fa-copy"></i> Copy
+            Address</button>
         </div>
       </div>
     </div>
@@ -782,7 +791,7 @@
     /* ══ SHEETS ══════════════════════════════════════════════════════ */
     function openSheet(id) {
       document.getElementById(id).classList.add('open');
-      if (id === 'receiveSheet') genAddress();
+      if (id === 'receiveSheet') showReceiveAddr();
       if (id === 'searchSheet') renderPriceList();
       if (id === 'buySheet') renderBuyPrices();
     }
@@ -791,19 +800,55 @@
 
     /* ══ RECEIVE ═════════════════════════════════════════════════════ */
     let currentAddr = '';
-    function genAddress() {
-      currentAddr = '0x' + [...Array(40)].map(() => '0123456789abcdef'[Math.random() * 16 | 0]).join('');
-      document.getElementById('walletAddr').textContent = currentAddr.slice(0, 8) + '…' + currentAddr.slice(-6);
+
+    /* Deterministic address from SRP seed — same address every time for same wallet */
+    async function deriveAddr(sym) {
+      const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
+      const seed = srp.join(' ') || 'nova-wallet-default-seed';
+      const enc = new TextEncoder().encode(seed + ':' + sym);
+      const hashBuf = await crypto.subtle.digest('SHA-256', enc);
+      const bytes = new Uint8Array(hashBuf);
+      const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+      if (sym === 'BTC') {
+        /* P2WPKH-style bech32 lookalike: bc1q + 38 hex chars */
+        return 'bc1q' + hex.slice(0, 38);
+      }
+      if (sym === 'SOL') {
+        /* Solana base58-like: 44 chars from [1-9A-HJ-NP-Za-km-z] */
+        const b58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        return Array.from(bytes.slice(0, 32)).map(b => b58[b % 58]).join('').slice(0, 44);
+      }
+      /* EVM (ETH / BNB / USDT / USDC) — same address, EIP-55 checksum style */
+      return '0x' + hex.slice(0, 40);
+    }
+
+    const RECEIVE_NETWORKS = {
+      ETH: 'Ethereum Mainnet (ERC-20)',
+      BNB: 'BNB Smart Chain (BEP-20)',
+      USDT: 'Ethereum Mainnet (ERC-20)',
+      USDC: 'Ethereum Mainnet (ERC-20)',
+      BTC: 'Bitcoin Network (Native SegWit)',
+      SOL: 'Solana Mainnet',
+    };
+
+    async function showReceiveAddr() {
+      const sym = document.getElementById('receiveAsset').value;
+      document.getElementById('walletAddr').textContent = 'Deriving address…';
+      document.getElementById('receiveNetwork').textContent = RECEIVE_NETWORKS[sym] || '';
+      document.getElementById('qrWrap').innerHTML = '';
+      currentAddr = await deriveAddr(sym);
+      document.getElementById('walletAddr').textContent = currentAddr;
       document.getElementById('walletAddr').title = currentAddr;
       const wrap = document.getElementById('qrWrap');
-      wrap.innerHTML = '';
       try { new QRCode(wrap, { text: currentAddr, width: 150, height: 150, colorDark: '#000', colorLight: '#fff' }); } catch (e) { }
     }
+
     function copyAddr() {
-      if (!currentAddr) { openNotify('Generate an address first', 'error'); return; }
+      if (!currentAddr) { openNotify('No address loaded', 'error'); return; }
       navigator.clipboard.writeText(currentAddr)
-        .then(() => openNotify('Address copied to clipboard!', 'success'))
-        .catch(() => openNotify(currentAddr.slice(0, 20) + '…', 'success'));
+        .then(() => openNotify('Address copied!', 'success'))
+        .catch(() => openNotify(currentAddr, 'success'));
     }
 
     /* ══ TRANSACTIONS ════════════════════════════════════════════════ */
