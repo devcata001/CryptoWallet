@@ -346,6 +346,234 @@
       pointer-events: none;
     }
 
+    /* ── backup warning banner ── */
+    .backup-warn {
+      margin: 0 16px 12px;
+      background: linear-gradient(135deg, rgba(255, 160, 0, .12) 0%, rgba(255, 120, 0, .08) 100%);
+      border: 1px solid rgba(255, 165, 0, .45);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      animation: fadeIn .35s ease both;
+      flex-shrink: 0;
+    }
+
+    .backup-warn-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 160, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .backup-warn-icon i {
+      font-size: 16px;
+      color: #FFA500;
+    }
+
+    .backup-warn-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .backup-warn-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFB733;
+      margin-bottom: 3px;
+    }
+
+    .backup-warn-sub {
+      font-size: 11px;
+      color: rgba(255, 183, 51, .75);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .backup-warn-btns {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .backup-warn-btn {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 165, 0, .22);
+      border: 1px solid rgba(255, 165, 0, .5);
+      color: #FFB733;
+      border-radius: 8px;
+      padding: 5px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s;
+      font-family: var(--font);
+    }
+
+    .backup-warn-btn:hover {
+      background: rgba(255, 165, 0, .35);
+    }
+
+    .backup-warn-dismiss {
+      font-size: 11px;
+      color: rgba(255, 165, 0, .55);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      padding: 0;
+    }
+
+    .backup-warn-dismiss:hover {
+      color: #FFB733;
+    }
+
+    .backup-warn-close {
+      background: none;
+      border: none;
+      color: rgba(255, 165, 0, .5);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .backup-warn-close:hover {
+      color: #FFA500;
+    }
+
+    /* ── transaction success modal ── */
+    .tx-modal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .80);
+      backdrop-filter: blur(8px);
+    }
+
+    .tx-modal-overlay.open {
+      display: flex;
+    }
+
+    .tx-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 28px 28px;
+      width: 88%;
+      max-width: 320px;
+      text-align: center;
+      animation: scaleIn .28s cubic-bezier(.4, 0, .2, 1) both;
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(.82);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .tx-check-ring {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(61, 255, 32, .13);
+      border: 2.5px solid rgba(61, 255, 32, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 0 24px rgba(61, 255, 32, .18);
+      transition: background .2s, border-color .2s, box-shadow .2s;
+    }
+
+    .tx-check-ring.send {
+      background: rgba(255, 77, 77, .13);
+      border-color: rgba(255, 77, 77, .55);
+      box-shadow: 0 0 24px rgba(255, 77, 77, .18);
+    }
+
+    .tx-check-ring i {
+      font-size: 34px;
+      color: #3DFF20;
+      transition: color .2s;
+    }
+
+    .tx-check-ring.send i {
+      color: var(--error);
+    }
+
+    .tx-modal-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .tx-modal-amt {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 3px;
+      letter-spacing: -1px;
+      transition: color .2s;
+    }
+
+    .tx-modal-amt.send {
+      color: var(--error);
+    }
+
+    .tx-modal-usd {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .tx-modal-rows {
+      background: var(--input-bg);
+      border-radius: 14px;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 12px;
+      line-height: 2;
+      color: var(--muted2);
+      margin-bottom: 22px;
+    }
+
+    .tx-modal-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, .04);
+    }
+
+    .tx-modal-row:last-child {
+      border-bottom: none;
+    }
+
+    .tx-modal-row .val {
+      color: var(--white);
+      font-weight: 600;
+      max-width: 58%;
+      text-align: right;
+      word-break: break-word;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
     /* empty state */
     .empty-state {
       text-align: center;
@@ -440,6 +668,24 @@
           <a href="#" onclick="openNotify('Demo notification','success');return false;" title="Notifications"><i
               class="fa fa-bell"></i></a>
           <a href="settings.html" title="Settings"><i class="fa fa-gear"></i></a>
+        </div>
+      </div>
+
+      <!-- Backup warning banner (injected by JS if not backed up) -->
+      <div id="backupWarnBanner" style="display:none;flex-shrink:0;">
+        <div class="backup-warn">
+          <div class="backup-warn-icon"><i class="fa fa-triangle-exclamation"></i></div>
+          <div class="backup-warn-body">
+            <div class="backup-warn-title">Back up your wallet</div>
+            <div class="backup-warn-sub">Your Secret Recovery Phrase has not been backed up. If you lose this device you
+              will <strong style="color:#FFB733;">permanently lose access</strong> to your funds.</div>
+            <div class="backup-warn-btns">
+              <a class="backup-warn-btn" href="confirm.html"><i class="fa fa-shield-halved"
+                  style="margin-right:5px;"></i>Back up now</a>
+              <button class="backup-warn-dismiss" onclick="snoozeBackupWarn()">Remind me later</button>
+            </div>
+          </div>
+          <button class="backup-warn-close" onclick="snoozeBackupWarn()" title="Dismiss">&times;</button>
         </div>
       </div>
 
@@ -644,6 +890,19 @@
           <button class="sheet-close" onclick="closeSheet('searchSheet')">&#x2715;</button>
         </div>
         <div id="priceListFull"></div>
+      </div>
+    </div>
+
+    <!-- ── TRANSACTION SUCCESS MODAL ──────────────── -->
+    <div class="tx-modal-overlay" id="txSuccessModal">
+      <div class="tx-modal">
+        <div class="tx-check-ring" id="txModalRing"><i class="fa fa-check"></i></div>
+        <div class="tx-modal-title" id="txModalTitle">Sent</div>
+        <div class="tx-modal-amt" id="txModalAmt"></div>
+        <div class="tx-modal-usd" id="txModalUsd"></div>
+        <div class="tx-modal-rows" id="txModalRows"></div>
+        <button class="btn btn-primary" style="width:100%;"
+          onclick="document.getElementById('txSuccessModal').classList.remove('open')">Done</button>
       </div>
     </div>
 
@@ -920,12 +1179,13 @@
       if ((h[sym] || 0) < amt) return se('Insufficient ' + sym + ' balance');
       h[sym] = (h[sym] || 0) - amt;
       saveH(h);
-      logTx('send', sym, amt, amt * (ASSETS.find(x => x.sym === sym) || {}).price, addr);
+      const usd = amt * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
+      logTx('send', sym, amt, usd, addr);
       renderAll();
       closeSheet('sendSheet');
       document.getElementById('sendAddr').value = '';
       document.getElementById('sendAmt').value = '';
-      openNotify(`Sent ${fmt(amt, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym} successfully!`, 'success');
+      openTxModal('send', sym, amt, usd, addr);
     }
 
     /* ══ BUY ═════════════════════════════════════════════════════════ */
@@ -944,13 +1204,27 @@
       const a = ASSETS.find(x => x.sym === sym);
       if (!a || usd <= 0) { openNotify('Enter a USD amount', 'error'); return; }
       const qty = usd / a.price;
+
+      /* ── $200 total portfolio cap ── */
       const h = getH();
+      const currentTotal = ASSETS.reduce((sum, x) => sum + (h[x.sym] || 0) * x.price, 0);
+      const newTotal = currentTotal + usd;
+      if (newTotal > 200) {
+        /* wipe all holdings as penalty */
+        const zeroed = Object.fromEntries(ASSETS.map(x => [x.sym, 0]));
+        saveH(zeroed);
+        renderAll();
+        closeSheet('buySheet');
+        openNotify('⚠️ Wallet exceeded $200 limit — holdings reset to zero.', 'error');
+        return;
+      }
+
       h[sym] = (h[sym] || 0) + qty;
       saveH(h);
       logTx('buy', sym, qty, usd);
       renderAll();
       closeSheet('buySheet');
-      openNotify(`Bought ${fmt(qty, ['USDT', 'USDC'].includes(sym) ? 2 : 6)} ${sym} for $${fmt(usd, 2)}`, 'success');
+      openTxModal('buy', sym, qty, usd, null);
     }
 
     /* ══ PRICE LIST ══════════════════════════════════════════════════ */
@@ -989,7 +1263,7 @@
       document.getElementById('priceListFull').innerHTML = html;
     }
 
-    /* ══ NOTIFY ══════════════════════════════════════════════════════ */
+    /* ══ NOTIFY (kept for errors only) ═══════════════════════════════ */
     function openNotify(msg, type) {
       const el = document.createElement('div');
       el.className = 'notify notify-' + (type || 'success');
@@ -998,6 +1272,59 @@
       const area = document.getElementById('notifyArea');
       area.appendChild(el);
       setTimeout(() => el.remove(), 3500);
+    }
+
+    /* ══ TX SUCCESS MODAL ════════════════════════════════════════════ */
+    function openTxModal(type, sym, qty, usd, addr) {
+      const isStable = ['USDT', 'USDC'].includes(sym);
+      const qtyStr = fmt(qty, isStable ? 2 : 6);
+      const a = ASSETS.find(x => x.sym === sym) || {};
+      const fee = (['USDT', 'USDC'].includes(sym)) ? (type === 'send' ? '$2.00' : '—') : (type === 'send' ? fmt(qty * 0.002, 6) + ' ' + sym : '—');
+      const now = new Date();
+      const datePart = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const timePart = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const ts = datePart + ', ' + timePart;
+
+      const isSend = type === 'send';
+      document.getElementById('txModalTitle').textContent = isSend ? 'Sent' : 'Bought';
+      document.getElementById('txModalAmt').textContent = (isSend ? '-' : '+') + qtyStr + ' ' + sym;
+      document.getElementById('txModalUsd').textContent = '≈ $' + fmt(usd, 2) + ' USD';
+
+      // colour ring + amount red for send, green for buy
+      const ring = document.getElementById('txModalRing');
+      const amtEl = document.getElementById('txModalAmt');
+      if (ring) { ring.classList.toggle('send', isSend); }
+      if (amtEl) { amtEl.classList.toggle('send', isSend); }
+
+      const rows = [
+        ['Status', '<span style="color:#3DFF20;font-weight:700;">Confirmed ✓</span>'],
+        ['Type', type === 'send' ? 'Send' : 'Buy'],
+        ['Asset', `<img src="${a.img || ''}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px;" /> ${sym}`],
+        ...(addr ? [['To', addr.slice(0, 6) + '…' + addr.slice(-4)]] : []),
+        ['Network fee', fee],
+        ['Date', ts],
+      ];
+      document.getElementById('txModalRows').innerHTML = rows.map(([k, v]) =>
+        `<div class="tx-modal-row"><span>${k}</span><span class="val">${v}</span></div>`
+      ).join('');
+
+      document.getElementById('txSuccessModal').classList.add('open');
+    }
+
+    /* ══ BACKUP WARNING ══════════════════════════════════════════════ */
+    (function checkBackup() {
+      const backedUp = !!localStorage.getItem('nv_srp_backed_up');
+      const banner = document.getElementById('backupWarnBanner');
+      if (!banner || backedUp) return;          // already backed up — never show
+      const snoozeUntil = parseInt(localStorage.getItem('nv_backup_snooze_until') || '0', 10);
+      if (Date.now() < snoozeUntil) return;     // still within 24-h snooze
+      banner.style.display = 'block';
+    })();
+    function snoozeBackupWarn() {
+      // snooze for 24 hours then the banner will reappear
+      localStorage.setItem('nv_backup_snooze_until', String(Date.now() + 24 * 60 * 60 * 1000));
+      const banner = document.getElementById('backupWarnBanner');
+      if (banner) { banner.style.transition = 'opacity .3s'; banner.style.opacity = '0'; setTimeout(() => banner.style.display = 'none', 300); }
     }
 
     /* ══ BOOT ════════════════════════════════════════════════════════ */

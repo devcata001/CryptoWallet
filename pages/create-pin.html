@@ -121,6 +121,7 @@
                 errEl.style.display = 'flex'; return;
             }
             localStorage.setItem('nv_unlocked', '1');
+            localStorage.setItem('nv_srp_backed_up', '1'); // phrase verified — wallet is backed up
             location.href = 'success.html';
         }
     </script>
