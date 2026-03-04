@@ -325,6 +325,7 @@
       function showErr(m) { errMsg.textContent = m; errEl.style.display = 'flex'; return false; }
       if (saved && cur !== saved) return showErr('Incorrect current password');
       if (!nxt || nxt.length < 8) return showErr('New password must be at least 8 characters');
+      if (/[^\x20-\x7E]/.test(nxt)) return showErr('Password must only contain letters, numbers and standard symbols');
       if (nxt !== cnf) return showErr('Passwords do not match');
       localStorage.setItem('nv_password', nxt);
       closeSheet('changePinSheet');

@@ -1060,25 +1060,34 @@
     /* ══ RECEIVE ═════════════════════════════════════════════════════ */
     let currentAddr = '';
 
-    /* Deterministic address from SRP seed — same address every time for same wallet */
+    /* Network key: assets on the same network share the same derived address */
+    const ADDR_NETWORK_KEY = {
+      ETH: 'EVM_ETH',   // Ethereum Mainnet
+      USDT: 'EVM_ETH',   // ERC-20 → same Ethereum address
+      USDC: 'EVM_ETH',   // ERC-20 → same Ethereum address
+      BNB: 'EVM_BNB',   // BNB Smart Chain (BSC)
+      BTC: 'BTC',
+      SOL: 'SOL',
+    };
+
+    /* Deterministic address from SRP seed — same address every time for same wallet + network */
     async function deriveAddr(sym) {
+      const netKey = ADDR_NETWORK_KEY[sym] || sym;
       const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
       const seed = srp.join(' ') || 'nova-wallet-default-seed';
-      const enc = new TextEncoder().encode(seed + ':' + sym);
+      const enc = new TextEncoder().encode(seed + ':' + netKey);
       const hashBuf = await crypto.subtle.digest('SHA-256', enc);
       const bytes = new Uint8Array(hashBuf);
       const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
-      if (sym === 'BTC') {
-        /* P2WPKH-style bech32 lookalike: bc1q + 38 hex chars */
+      if (netKey === 'BTC') {
         return 'bc1q' + hex.slice(0, 38);
       }
-      if (sym === 'SOL') {
-        /* Solana base58-like: 44 chars from [1-9A-HJ-NP-Za-km-z] */
+      if (netKey === 'SOL') {
         const b58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
         return Array.from(bytes.slice(0, 32)).map(b => b58[b % 58]).join('').slice(0, 44);
       }
-      /* EVM (ETH / BNB / USDT / USDC) — same address, EIP-55 checksum style */
+      /* All EVM networks (ETH mainnet, BSC) — 0x + 40 hex */
       return '0x' + hex.slice(0, 40);
     }
 
@@ -1153,6 +1162,20 @@
     }
 
     /* ══ SEND ════════════════════════════════════════════════════════ */
+    /* ── per-network address validation ── */
+    const ADDR_FORMATS = {
+      EVM: { re: /^0x[a-fA-F0-9]{40}$/, hint: 'Must be 0x followed by 40 hex characters (42 chars total)' },
+      BTC: { re: /^(bc1[a-z0-9]{25,39}|[13][a-zA-Z0-9]{25,34})$/, hint: 'Invalid Bitcoin address format' },
+      SOL: { re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, hint: 'Invalid Solana address format' },
+    };
+    const SYM_ADDR_TYPE = { ETH: 'EVM', BNB: 'EVM', USDT: 'EVM', USDC: 'EVM', BTC: 'BTC', SOL: 'SOL' };
+    function validateSendAddr(addr, sym) {
+      const type = SYM_ADDR_TYPE[sym] || 'EVM';
+      const fmt = ADDR_FORMATS[type];
+      if (!fmt.re.test(addr)) return fmt.hint;
+      return null; // valid
+    }
+
     function updateSendPreview() {
       const sym = document.getElementById('sendAsset').value;
       const amt = parseFloat(document.getElementById('sendAmt').value) || 0;
@@ -1173,7 +1196,8 @@
       function se(m) { errMsg.textContent = m; errEl.style.display = 'flex'; }
       errEl.style.display = 'none';
       if (!addr) return se('Enter a recipient address');
-      if (addr.length < 10) return se('Address too short');
+      const addrErr = validateSendAddr(addr, sym);
+      if (addrErr) return se(addrErr);
       if (!amt || amt <= 0) return se('Enter an amount > 0');
       const h = getH();
       if ((h[sym] || 0) < amt) return se('Insufficient ' + sym + ' balance');
