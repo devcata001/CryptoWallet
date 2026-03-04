@@ -118,20 +118,20 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 
 ## localStorage / sessionStorage Keys
 
-| Key | Store | Purpose |
-| --- | --- | --- |
-| `nv_user` | local | `{ username, passHash }` — registered account |
-| `nv_session` | local | `{ username, ts }` — active session |
-| `nv_srp` | local | AES-GCM encrypted Secret Recovery Phrase (`iv:base64`) |
-| `nv_srp_salt` | local | Random 16-byte hex salt for SRP AES key derivation |
-| `nv_srp_backed_up` | local | `'1'` if the user completed the SRP quiz |
-| `nv_backup_snooze_until` | local | Timestamp until backup banner is snoozed |
-| `nv_unlocked` | **session** | `'1'` after PIN success — cleared on browser close |
-| `nv_enc_key` | **session** | Exported AES-GCM key bytes (hex) for SRP decryption |
-| `nv_holdings` | local | `{ BTC, ETH, BNB, SOL, USDT, USDC }` — demo balances |
-| `nv_txs` | local | Array of transaction objects (max 100) |
-| `nv_price_cache` | local | Cached CoinGecko prices with timestamp |
-| `nv_password` | local | PBKDF2 hash: `{16-byte saltHex}:{SHA-256 hashHex}` |
+| Key                      | Store       | Purpose                                                |
+| ------------------------ | ----------- | ------------------------------------------------------ |
+| `nv_user`                | local       | `{ username, passHash }` — registered account          |
+| `nv_session`             | local       | `{ username, ts }` — active session                    |
+| `nv_srp`                 | local       | AES-GCM encrypted Secret Recovery Phrase (`iv:base64`) |
+| `nv_srp_salt`            | local       | Random 16-byte hex salt for SRP AES key derivation     |
+| `nv_srp_backed_up`       | local       | `'1'` if the user completed the SRP quiz               |
+| `nv_backup_snooze_until` | local       | Timestamp until backup banner is snoozed               |
+| `nv_unlocked`            | **session** | `'1'` after PIN success — cleared on browser close     |
+| `nv_enc_key`             | **session** | Exported AES-GCM key bytes (hex) for SRP decryption    |
+| `nv_holdings`            | local       | `{ BTC, ETH, BNB, SOL, USDT, USDC }` — demo balances   |
+| `nv_txs`                 | local       | Array of transaction objects (max 100)                 |
+| `nv_price_cache`         | local       | Cached CoinGecko prices with timestamp                 |
+| `nv_password`            | local       | PBKDF2 hash: `{16-byte saltHex}:{SHA-256 hashHex}`     |
 
 ---
 
