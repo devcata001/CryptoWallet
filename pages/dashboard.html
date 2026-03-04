@@ -832,8 +832,10 @@
           <select id="receiveAsset" class="nova-select" onchange="showReceiveAddr()">
             <option value="ETH">Ethereum (ETH)</option>
             <option value="BNB">BNB (BNB)</option>
-            <option value="USDT">Tether (USDT)</option>
-            <option value="USDC">USD Coin (USDC)</option>
+            <option value="USDT">Tether – ERC-20 (USDT)</option>
+            <option value="USDT_BEP20">Tether – BEP-20 (USDT)</option>
+            <option value="USDC">USD Coin – ERC-20 (USDC)</option>
+            <option value="USDC_BEP20">USD Coin – BEP-20 (USDC)</option>
             <option value="BTC">Bitcoin (BTC)</option>
             <option value="SOL">Solana (SOL)</option>
           </select>
@@ -1066,6 +1068,8 @@
       USDT: 'EVM_ETH',   // ERC-20 → same Ethereum address
       USDC: 'EVM_ETH',   // ERC-20 → same Ethereum address
       BNB: 'EVM_BNB',   // BNB Smart Chain (BSC)
+      USDT_BEP20: 'EVM_BNB',   // BEP-20 → same BSC address as BNB
+      USDC_BEP20: 'EVM_BNB',   // BEP-20 → same BSC address as BNB
       BTC: 'BTC',
       SOL: 'SOL',
     };
@@ -1095,7 +1099,9 @@
       ETH: 'Ethereum Mainnet (ERC-20)',
       BNB: 'BNB Smart Chain (BEP-20)',
       USDT: 'Ethereum Mainnet (ERC-20)',
+      USDT_BEP20: 'BNB Smart Chain (BEP-20)',
       USDC: 'Ethereum Mainnet (ERC-20)',
+      USDC_BEP20: 'BNB Smart Chain (BEP-20)',
       BTC: 'Bitcoin Network (Native SegWit)',
       SOL: 'Solana Mainnet',
     };
