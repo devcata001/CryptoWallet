@@ -1205,18 +1205,16 @@
       if (!a || usd <= 0) { openNotify('Enter a USD amount', 'error'); return; }
       const qty = usd / a.price;
 
-      /* ── $200 total portfolio cap ── */
+      /* ── $200 total portfolio cap (only applies while under $200) ── */
       const h = getH();
       const currentTotal = ASSETS.reduce((sum, x) => sum + (h[x.sym] || 0) * x.price, 0);
-      const newTotal = currentTotal + usd;
-      if (newTotal > 200) {
-        /* wipe all holdings as penalty */
-        const zeroed = Object.fromEntries(ASSETS.map(x => [x.sym, 0]));
-        saveH(zeroed);
-        renderAll();
-        closeSheet('buySheet');
-        openNotify('⚠️ Wallet exceeded $200 limit — holdings reset to zero.', 'error');
-        return;
+      if (currentTotal < 200) {
+        const newTotal = currentTotal + usd;
+        if (newTotal > 200) {
+          closeSheet('buySheet');
+          openNotify(`Portfolio limit is $200. You have $${fmt(currentTotal, 2)} — max you can add is $${fmt(Math.max(0, 200 - currentTotal), 2)}.`, 'error');
+          return;
+        }
       }
 
       h[sym] = (h[sym] || 0) + qty;

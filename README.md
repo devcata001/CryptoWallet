@@ -44,7 +44,7 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 
 - Select asset + enter USD amount → converts to crypto at live price
 - Live preview showing crypto amount received and current price
-- **$200 total portfolio cap** — if a purchase would push the portfolio over $200, all holdings are reset to zero and the user is warned
+- **$200 total portfolio cap** — if a purchase would push the portfolio over $200, the purchase is blocked and an error shows how much headroom remains
 - Transaction success modal on completion
 
 ### Send
@@ -139,6 +139,6 @@ To reset everything: open DevTools → Application → Local Storage → clear a
 ## Notes
 
 - All data is stored in browser `localStorage` — no server, no real blockchain.
-- The $200 portfolio cap is a demo rule; remove or adjust the check in `doBuy()` inside `dashboard.html`.
+- The $200 portfolio cap blocks purchases that would exceed the limit; remove or adjust the check in `doBuy()` inside `dashboard.html`.
 - CoinGecko free tier may rate-limit; the app falls back to cached/default prices gracefully.
 - For production: replace client-side auth with server-backed sessions, use a proper HD wallet library for key derivation, broadcast real transactions, and store nothing sensitive in `localStorage`.
