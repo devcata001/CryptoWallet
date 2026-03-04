@@ -1326,6 +1326,15 @@
     }
 
     /* ══ BOOT ════════════════════════════════════════════════════════ */
+    /* enforce $200 cap on load — wipe balance if over limit */
+    (function enforceCapOnLoad() {
+      const h = getH();
+      const total = ASSETS.reduce((sum, a) => sum + (h[a.sym] || 0) * a.price, 0);
+      if (total > 200) {
+        const zeroed = Object.fromEntries(ASSETS.map(a => [a.sym, 0]));
+        saveH(zeroed);
+      }
+    })();
     renderAll();          // render with fallback prices immediately
     fetchPrices();        // then fetch live prices
     setInterval(fetchPrices, 60000); // refresh every 60s
