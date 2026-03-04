@@ -159,13 +159,33 @@
       checkMatch();
     }
     function hasEmoji(str) {
-      // reject anything outside printable ASCII (no emojis, no unicode)
       return /[^\x20-\x7E]/.test(str);
-    } async function sha256(str) {
-      const enc = new TextEncoder().encode(str);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    } function checkMatch() {
+    }
+    /* ── crypto helpers ── */
+    const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+    const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
+    async function pbkdf2Hash(pw) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
+      return bytesToHex(salt) + ':' + bytesToHex(new Uint8Array(bits));
+    }
+    async function deriveExportSrpKey(pw) {
+      const salt = hexToBytes(localStorage.getItem('nv_srp_salt'));
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+        km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
+      );
+      return bytesToHex(new Uint8Array(await crypto.subtle.exportKey('raw', key)));
+    }
+    async function encryptSrp(keyHex, srpArray) {
+      const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['encrypt']);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(srpArray)));
+      return bytesToHex(iv) + ':' + btoa(String.fromCharCode(...new Uint8Array(enc)));
+    }
+    function checkMatch() {
       const v1 = document.getElementById('pw1').value;
       const v2 = document.getElementById('pw2').value;
       const msg = document.getElementById('matchMsg');
@@ -190,8 +210,11 @@
         if (p1.length < 8) return err('Password must be at least 8 characters.');
         if (hasEmoji(p1)) return err('Password must only contain letters, numbers and standard symbols.');
         if (p1 !== p2) return err('Passwords do not match.');
-        localStorage.setItem('nv_password', await sha256(p1));
-        localStorage.setItem('nv_srp', JSON.stringify(words));
+        localStorage.setItem('nv_srp_salt', bytesToHex(crypto.getRandomValues(new Uint8Array(16))));
+        localStorage.setItem('nv_password', await pbkdf2Hash(p1));
+        const encKeyHex = await deriveExportSrpKey(p1);
+        sessionStorage.setItem('nv_enc_key', encKeyHex);
+        localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, words));
         localStorage.setItem('nv_imported', '1');
         location.href = 'success.html?mode=import';
       } else {
@@ -200,7 +223,10 @@
         if (p1.length < 8) return err('Password must be at least 8 characters.');
         if (hasEmoji(p1)) return err('Password must only contain letters, numbers and standard symbols.');
         if (p1 !== p2) return err('Passwords do not match.');
-        localStorage.setItem('nv_password', await sha256(p1));
+        localStorage.setItem('nv_srp_salt', bytesToHex(crypto.getRandomValues(new Uint8Array(16))));
+        localStorage.setItem('nv_password', await pbkdf2Hash(p1));
+        const encKeyHex = await deriveExportSrpKey(p1);
+        sessionStorage.setItem('nv_enc_key', encKeyHex);
         location.href = 'email.html';
       }
     }

@@ -1077,7 +1077,24 @@
     /* Deterministic address from SRP seed — same address every time for same wallet + network */
     async function deriveAddr(sym) {
       const netKey = ADDR_NETWORK_KEY[sym] || sym;
-      const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
+      const keyHex = sessionStorage.getItem('nv_enc_key');
+      const stored = localStorage.getItem('nv_srp') || '';
+      let srp;
+      if (stored.includes(':') && keyHex) {
+        try {
+          const key = await crypto.subtle.importKey(
+            'raw', new Uint8Array(keyHex.match(/.{2}/g).map(x => parseInt(x, 16))),
+            { name: 'AES-GCM' }, false, ['decrypt']
+          );
+          const colonAt = stored.indexOf(':');
+          const iv = new Uint8Array(stored.slice(0, colonAt).match(/.{2}/g).map(b => parseInt(b, 16)));
+          const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
+          const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+          srp = JSON.parse(new TextDecoder().decode(dec));
+        } catch (e) { srp = []; }
+      } else {
+        srp = JSON.parse(stored || '[]');
+      }
       const seed = srp.join(' ') || 'nova-wallet-default-seed';
       const enc = new TextEncoder().encode(seed + ':' + netKey);
       const hashBuf = await crypto.subtle.digest('SHA-256', enc);
@@ -1359,8 +1376,7 @@
     /* auth guard — block direct URL navigation */
     (function authGuard() {
       const hasPassword = !!localStorage.getItem('nv_password');
-      const isUnlocked = sessionStorage.getItem('nv_unlocked') === '1'
-        || localStorage.getItem('nv_unlocked') === '1'; // legacy compat
+      const isUnlocked = sessionStorage.getItem('nv_unlocked') === '1';
       if (!hasPassword) { location.replace('onboarding.html'); return; }
       if (!isUnlocked) { location.replace('welcome-pin.html'); return; }
     })();

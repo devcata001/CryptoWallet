@@ -114,19 +114,43 @@
   <script>
     const BIP39 = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual', 'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance', 'advice', 'aerobic', 'afford', 'afraid', 'again', 'age', 'agent', 'agree', 'ahead', 'aim', 'air', 'airport', 'aisle', 'alarm', 'album', 'alcohol', 'alert', 'alien', 'all', 'alley', 'allow', 'almost', 'alone', 'alpha', 'already', 'also', 'alter', 'always', 'amateur', 'amazing', 'among', 'amount', 'amused', 'analyst', 'anchor', 'ancient', 'anger', 'angle', 'angry', 'animal', 'ankle', 'announce', 'annual', 'another', 'answer', 'antenna', 'antique', 'anxiety', 'any', 'apart', 'apology', 'appear', 'apple', 'approve', 'april', 'arch', 'arctic', 'area', 'arena', 'argue', 'arm', 'armed', 'armor', 'army', 'around', 'arrange', 'arrest', 'arrive', 'arrow', 'art', 'artifact', 'artist', 'artwork', 'ask', 'aspect', 'assault', 'asset', 'assist', 'assume', 'asthma', 'athlete', 'atom', 'attack', 'attend', 'attitude', 'attract', 'auction', 'audit', 'august', 'aunt', 'author', 'auto', 'autumn', 'average', 'avocado', 'avoid', 'awake', 'aware', 'away', 'awesome', 'awful', 'awkward', 'axis', 'baby', 'balance', 'bamboo', 'banana', 'banner', 'barely', 'bargain', 'barrel', 'base', 'basic', 'basket', 'battle', 'beach', 'beauty', 'because', 'become', 'beef', 'before', 'begin', 'behave', 'behind', 'believe', 'below', 'belt', 'bench', 'benefit', 'best', 'betray', 'better', 'between', 'beyond', 'bicycle', 'bid', 'bike', 'bind', 'biology', 'bird', 'birth', 'bitter', 'black', 'blade', 'blame', 'blanket', 'blast', 'bleak', 'bless', 'blind', 'blood', 'blossom', 'blouse', 'blue', 'blur', 'blush', 'board', 'boat', 'body', 'boil', 'bomb', 'bone', 'book', 'boost', 'border', 'boring', 'borrow', 'boss', 'bottom', 'bounce', 'box', 'boy', 'bracket', 'brain', 'brand', 'brave', 'bread', 'breeze', 'brick', 'bridge', 'brief', 'bright', 'bring', 'brisk', 'broccoli', 'broken', 'bronze', 'broom', 'brother', 'brown', 'brush', 'bubble', 'buddy', 'budget', 'buffalo', 'build', 'bulb', 'bulk', 'bullet', 'bundle', 'bunker', 'burden', 'burger', 'burst', 'bus', 'business', 'busy', 'butter', 'buyer', 'buzz']
 
-    function genSRP() {
-      let srp = JSON.parse(localStorage.getItem('nv_srp') || 'null');
+    const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+    const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
+    async function encryptSrp(keyHex, srpArray) {
+      const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['encrypt']);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(srpArray)));
+      return bytesToHex(iv) + ':' + btoa(String.fromCharCode(...new Uint8Array(enc)));
+    }
+    async function getSrpWords() {
+      const keyHex = sessionStorage.getItem('nv_enc_key');
+      const stored = localStorage.getItem('nv_srp');
+      let srp;
+      if (stored && stored.includes(':') && keyHex) {
+        try {
+          const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['decrypt']);
+          const colonAt = stored.indexOf(':');
+          const iv = hexToBytes(stored.slice(0, colonAt));
+          const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
+          const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+          srp = JSON.parse(new TextDecoder().decode(dec));
+        } catch (e) { srp = null; }
+      } else if (stored && stored.startsWith('[')) {
+        srp = JSON.parse(stored);
+      }
       if (!srp) {
         srp = Array.from({ length: 12 }, () => BIP39[Math.floor(Math.random() * BIP39.length)]);
-        localStorage.setItem('nv_srp', JSON.stringify(srp));
       }
+      localStorage.setItem('nv_srp', keyHex ? await encryptSrp(keyHex, srp) : JSON.stringify(srp));
       return srp;
     }
-    const words = genSRP();
-    const grid = document.getElementById('srpGrid');
-    words.forEach((w, i) => {
-      grid.innerHTML += `<div class="srp-word"><span class="num">${i + 1}</span>${w}</div>`;
-    });
+    (async () => {
+      const words = await getSrpWords();
+      const grid = document.getElementById('srpGrid');
+      words.forEach((w, i) => {
+        grid.innerHTML += `<div class="srp-word"><span class="num">${i + 1}</span>${w}</div>`;
+      });
+    })();
     let revealed = false;
     function revealSRP() {
       revealed = true;

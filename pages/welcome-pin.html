@@ -76,10 +76,16 @@
       const clean = this.value.replace(/[^\x20-\x7E]/g, '');
       if (clean !== this.value) this.value = clean;
     });
-    async function sha256(str) {
-      const enc = new TextEncoder().encode(str);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+    const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
+    async function pbkdf2Verify(pw, stored) {
+      if (!stored || !stored.includes(':')) return false;
+      const colonAt = stored.indexOf(':');
+      const salt = hexToBytes(stored.slice(0, colonAt));
+      const hashHex = stored.slice(colonAt + 1);
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
+      return bytesToHex(new Uint8Array(bits)) === hashHex;
     }
     function toggle() {
       const el = document.getElementById('pwInput');
@@ -91,21 +97,49 @@
       const saved = localStorage.getItem('nv_password');
       const errEl = document.getElementById('unlockError');
       const wrap = document.getElementById('pwWrap');
+      /* ── rate limiting ── */
+      const lockUntil = parseInt(sessionStorage.getItem('nv_fail_until') || '0');
+      if (Date.now() < lockUntil) {
+        const secs = Math.ceil((lockUntil - Date.now()) / 1000);
+        errEl.innerHTML = `<i class="fa fa-lock"></i> Too many attempts \u2014 try again in ${secs}s`;
+        errEl.style.display = 'flex';
+        return;
+      }
       function shake(msg) {
-        errEl.innerHTML = `<i class="fa fa-triangle-exclamation"></i> ${msg}`;
+        const fails = parseInt(sessionStorage.getItem('nv_fail_count') || '0') + 1;
+        sessionStorage.setItem('nv_fail_count', fails);
+        if (fails >= 5) {
+          sessionStorage.setItem('nv_fail_until', Date.now() + 30000);
+          sessionStorage.removeItem('nv_fail_count');
+          errEl.innerHTML = '<i class="fa fa-lock"></i> Too many attempts \u2014 locked for 30 seconds';
+        } else {
+          errEl.innerHTML = `<i class="fa fa-triangle-exclamation"></i> ${msg} (${fails}/5 attempts)`;
+        }
         errEl.style.display = 'flex';
         wrap.classList.add('shake');
         document.getElementById('pwInput').value = '';
         setTimeout(() => wrap.classList.remove('shake'), 500);
       }
-      // Legacy detection: plain-text passwords (not a 64-char hex hash) must be reset
-      if (saved && !/^[a-f0-9]{64}$/.test(saved)) {
-        errEl.innerHTML = '<i class="fa fa-triangle-exclamation"></i> Security upgrade required — please <a href="../index.html" onclick="localStorage.removeItem(\x27nv_password\x27);return true;" style="color:var(--green);">reset your password</a>.';
+      /* ── legacy: no colon = old SHA-256 or plain-text password ── */
+      if (saved && !saved.includes(':')) {
+        errEl.innerHTML = '<i class="fa fa-triangle-exclamation"></i> Security upgrade required \u2014 please <a href="../index.html" onclick="localStorage.removeItem(\'nv_password\');return true;" style="color:var(--green);">reset your password</a>.';
         errEl.style.display = 'flex';
         return;
       }
-      const hashed = await sha256(v);
-      if (saved && hashed === saved) {
+      const verified = await pbkdf2Verify(v, saved);
+      if (verified) {
+        sessionStorage.removeItem('nv_fail_count');
+        sessionStorage.removeItem('nv_fail_until');
+        /* re-derive SRP encryption key for this session */
+        const srpSaltHex = localStorage.getItem('nv_srp_salt');
+        if (srpSaltHex) {
+          const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(v), 'PBKDF2', false, ['deriveKey']);
+          const encKey = await crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: hexToBytes(srpSaltHex), iterations: 100000, hash: 'SHA-256' },
+            km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
+          );
+          sessionStorage.setItem('nv_enc_key', bytesToHex(new Uint8Array(await crypto.subtle.exportKey('raw', encKey))));
+        }
         sessionStorage.setItem('nv_unlocked', '1');
         location.href = 'dashboard.html';
       } else {

@@ -78,10 +78,15 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 
 ### Security
 
-- SHA-256 hashed password stored in `localStorage`
-- Session key validated on every page load; unauthenticated users redirected to login
+- **PBKDF2** (100 000 iterations, SHA-256, random 16-byte salt) used for password hashing — salt embedded in stored value as `{saltHex}:{hashHex}`
+- **AES-GCM 256-bit** encrypted Secret Recovery Phrase — never stored in plaintext; key derived from password via PBKDF2 using a separate `nv_srp_salt`
+- Derived AES key exported to `sessionStorage` (`nv_enc_key`) on login/setup — clears automatically on tab/browser close
+- **Auth guard** on dashboard: redirects to PIN screen if `sessionStorage.nv_unlocked` is absent — blocks direct URL navigation
+- Session token (`nv_unlocked`) stored in `sessionStorage` only — forces re-authentication on browser restart
+- **Rate limiting**: 5 failed PIN attempts trigger a 30-second lockout
+- Password change re-derives and re-encrypts the SRP with the new key — old key invalidated immediately
 - Multi-user support — holdings and transactions keyed per username
-- Password change form with current-password verification
+- Password change form requires current-password verification
 
 ---
 
@@ -111,20 +116,22 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 
 ---
 
-## localStorage Keys
+## localStorage / sessionStorage Keys
 
-| Key                      | Purpose                                              |
-| ------------------------ | ---------------------------------------------------- |
-| `nv_user`                | `{ username, passHash }` — registered account        |
-| `nv_session`             | `{ username, ts }` — active session                  |
-| `nv_srp`                 | 12-word Secret Recovery Phrase array                 |
-| `nv_srp_backed_up`       | `'1'` if the user completed the SRP quiz             |
-| `nv_backup_snooze_until` | Timestamp until backup banner is snoozed             |
-| `nv_unlocked`            | `'1'` after PIN/quiz success                         |
-| `nv_holdings`            | `{ BTC, ETH, BNB, SOL, USDT, USDC }` — demo balances |
-| `nv_txs`                 | Array of transaction objects (max 100)               |
-| `nv_price_cache`         | Cached CoinGecko prices with timestamp               |
-| `nv_password`            | PIN hash for welcome-pin screen                      |
+| Key | Store | Purpose |
+| --- | --- | --- |
+| `nv_user` | local | `{ username, passHash }` — registered account |
+| `nv_session` | local | `{ username, ts }` — active session |
+| `nv_srp` | local | AES-GCM encrypted Secret Recovery Phrase (`iv:base64`) |
+| `nv_srp_salt` | local | Random 16-byte hex salt for SRP AES key derivation |
+| `nv_srp_backed_up` | local | `'1'` if the user completed the SRP quiz |
+| `nv_backup_snooze_until` | local | Timestamp until backup banner is snoozed |
+| `nv_unlocked` | **session** | `'1'` after PIN success — cleared on browser close |
+| `nv_enc_key` | **session** | Exported AES-GCM key bytes (hex) for SRP decryption |
+| `nv_holdings` | local | `{ BTC, ETH, BNB, SOL, USDT, USDC }` — demo balances |
+| `nv_txs` | local | Array of transaction objects (max 100) |
+| `nv_price_cache` | local | Cached CoinGecko prices with timestamp |
+| `nv_password` | local | PBKDF2 hash: `{16-byte saltHex}:{SHA-256 hashHex}` |
 
 ---
 

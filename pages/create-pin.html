@@ -76,28 +76,9 @@
         </div>
     </div>
     <script>
-        const srp = JSON.parse(localStorage.getItem('nv_srp') || '[]');
-        if (!srp.length) location.href = 'onboarding.html';
-
-        // pick 3 unique random positions to quiz
+        const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
+        let srp = [];
         const positions = [];
-        while (positions.length < 3) {
-            const p = Math.floor(Math.random() * 12);
-            if (!positions.includes(p)) positions.push(p);
-        }
-        positions.sort((a, b) => a - b);
-
-        const slots = document.getElementById('quizSlots');
-        positions.forEach(p => {
-            slots.innerHTML += `
-      <div class="quiz-slot">
-        <div class="num-badge">${p + 1}</div>
-        <div class="input-wrap" style="flex:1;position:relative;">
-          <input type="text" class="nova-input" id="slot_${p}" placeholder="Word #${p + 1}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" oninput="liveCheck(${p})"/>
-        </div>
-        <div class="ok-icon" id="ok_${p}"></div>
-      </div>`;
-        });
 
         function liveCheck(p) {
             const v = document.getElementById('slot_' + p).value.trim().toLowerCase();
@@ -125,6 +106,40 @@
             localStorage.setItem('nv_srp_backed_up', '1'); // phrase verified — wallet is backed up
             location.href = 'success.html';
         }
+
+        (async () => {
+            const keyHex = sessionStorage.getItem('nv_enc_key');
+            const stored = localStorage.getItem('nv_srp') || '';
+            if (stored.includes(':') && keyHex) {
+                try {
+                    const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['decrypt']);
+                    const colonAt = stored.indexOf(':');
+                    const iv = hexToBytes(stored.slice(0, colonAt));
+                    const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
+                    const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+                    srp.push(...JSON.parse(new TextDecoder().decode(dec)));
+                } catch (e) { /* decryption failed */ }
+            } else if (stored.startsWith('[')) {
+                srp.push(...JSON.parse(stored));
+            }
+            if (!srp.length) { location.href = 'onboarding.html'; return; }
+            while (positions.length < 3) {
+                const p = Math.floor(Math.random() * 12);
+                if (!positions.includes(p)) positions.push(p);
+            }
+            positions.sort((a, b) => a - b);
+            const slots = document.getElementById('quizSlots');
+            positions.forEach(p => {
+                slots.innerHTML += `
+      <div class="quiz-slot">
+        <div class="num-badge">${p + 1}</div>
+        <div class="input-wrap" style="flex:1;position:relative;">
+          <input type="text" class="nova-input" id="slot_${p}" placeholder="Word #${p + 1}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" oninput="liveCheck(${p})"/>
+        </div>
+        <div class="ok-icon" id="ok_${p}"></div>
+      </div>`;
+            });
+        })();
     </script>
 </body>
 
