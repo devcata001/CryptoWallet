@@ -315,7 +315,12 @@
     function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
 
     // Change PIN
-    function doChangePin() {
+    async function sha256(str) {
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    async function doChangePin() {
       const cur = document.getElementById('currentPin').value;
       const nxt = document.getElementById('newPin').value;
       const cnf = document.getElementById('confirmPin').value;
@@ -323,11 +328,11 @@
       const errMsg = document.getElementById('pinSheetErrMsg');
       const saved = localStorage.getItem('nv_password') || '';
       function showErr(m) { errMsg.textContent = m; errEl.style.display = 'flex'; return false; }
-      if (saved && cur !== saved) return showErr('Incorrect current password');
+      if (saved && await sha256(cur) !== saved) return showErr('Incorrect current password');
       if (!nxt || nxt.length < 8) return showErr('New password must be at least 8 characters');
       if (/[^\x20-\x7E]/.test(nxt)) return showErr('Password must only contain letters, numbers and standard symbols');
       if (nxt !== cnf) return showErr('Passwords do not match');
-      localStorage.setItem('nv_password', nxt);
+      localStorage.setItem('nv_password', await sha256(nxt));
       closeSheet('changePinSheet');
       ['currentPin', 'newPin', 'confirmPin'].forEach(id => document.getElementById(id).value = '');
       errEl.style.display = 'none';

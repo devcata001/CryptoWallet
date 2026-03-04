@@ -1356,6 +1356,14 @@
     }
 
     /* ══ BOOT ════════════════════════════════════════════════════════ */
+    /* auth guard — block direct URL navigation */
+    (function authGuard() {
+      const hasPassword = !!localStorage.getItem('nv_password');
+      const isUnlocked = sessionStorage.getItem('nv_unlocked') === '1'
+        || localStorage.getItem('nv_unlocked') === '1'; // legacy compat
+      if (!hasPassword) { location.replace('onboarding.html'); return; }
+      if (!isUnlocked) { location.replace('welcome-pin.html'); return; }
+    })();
     /* enforce $200 cap on load — wipe balance if over limit */
     (function enforceCapOnLoad() {
       const h = getH();

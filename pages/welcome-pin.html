@@ -76,24 +76,40 @@
       const clean = this.value.replace(/[^\x20-\x7E]/g, '');
       if (clean !== this.value) this.value = clean;
     });
+    async function sha256(str) {
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
     function toggle() {
       const el = document.getElementById('pwInput');
       el.type = el.type === 'password' ? 'text' : 'password';
       document.getElementById('eyeBtn').innerHTML = el.type === 'text' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
     }
-    function unlock() {
+    async function unlock() {
       const v = document.getElementById('pwInput').value;
       const saved = localStorage.getItem('nv_password');
       const errEl = document.getElementById('unlockError');
       const wrap = document.getElementById('pwWrap');
-      if (saved && v === saved) {
-        localStorage.setItem('nv_unlocked', '1');
-        location.href = 'dashboard.html';
-      } else {
+      function shake(msg) {
+        errEl.innerHTML = `<i class="fa fa-triangle-exclamation"></i> ${msg}`;
         errEl.style.display = 'flex';
         wrap.classList.add('shake');
         document.getElementById('pwInput').value = '';
         setTimeout(() => wrap.classList.remove('shake'), 500);
+      }
+      // Legacy detection: plain-text passwords (not a 64-char hex hash) must be reset
+      if (saved && !/^[a-f0-9]{64}$/.test(saved)) {
+        errEl.innerHTML = '<i class="fa fa-triangle-exclamation"></i> Security upgrade required — please <a href="../index.html" onclick="localStorage.removeItem(\x27nv_password\x27);return true;" style="color:var(--green);">reset your password</a>.';
+        errEl.style.display = 'flex';
+        return;
+      }
+      const hashed = await sha256(v);
+      if (saved && hashed === saved) {
+        sessionStorage.setItem('nv_unlocked', '1');
+        location.href = 'dashboard.html';
+      } else {
+        shake('Incorrect password');
       }
     }
   </script>

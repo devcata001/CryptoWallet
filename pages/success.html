@@ -119,7 +119,8 @@
       document.getElementById('successTitle').textContent = 'Wallet Created!';
       document.getElementById('successDesc').textContent = 'Remember to back up your Secret Recovery Phrase from Settings before you add funds.';
     }
-    localStorage.setItem('nv_unlocked', '1');
+    localStorage.setItem('nv_unlocked', '1'); // legacy — keep for compat
+    sessionStorage.setItem('nv_unlocked', '1'); // session-scoped unlock token
   </script>
 </body>
 

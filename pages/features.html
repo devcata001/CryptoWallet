@@ -161,8 +161,11 @@
     function hasEmoji(str) {
       // reject anything outside printable ASCII (no emojis, no unicode)
       return /[^\x20-\x7E]/.test(str);
-    }
-    function checkMatch() {
+    } async function sha256(str) {
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } function checkMatch() {
       const v1 = document.getElementById('pw1').value;
       const v2 = document.getElementById('pw2').value;
       const msg = document.getElementById('matchMsg');
@@ -171,7 +174,7 @@
       else { msg.textContent = ''; }
     }
     function validate() { /* just enables button visually */ }
-    function proceed() {
+    async function proceed() {
       const errEl = document.getElementById('formError');
       const errMsg = document.getElementById('formErrMsg');
       const agreed = document.getElementById('agreeBox').checked;
@@ -187,7 +190,7 @@
         if (p1.length < 8) return err('Password must be at least 8 characters.');
         if (hasEmoji(p1)) return err('Password must only contain letters, numbers and standard symbols.');
         if (p1 !== p2) return err('Passwords do not match.');
-        localStorage.setItem('nv_password', p1);
+        localStorage.setItem('nv_password', await sha256(p1));
         localStorage.setItem('nv_srp', JSON.stringify(words));
         localStorage.setItem('nv_imported', '1');
         location.href = 'success.html?mode=import';
@@ -197,7 +200,7 @@
         if (p1.length < 8) return err('Password must be at least 8 characters.');
         if (hasEmoji(p1)) return err('Password must only contain letters, numbers and standard symbols.');
         if (p1 !== p2) return err('Passwords do not match.');
-        localStorage.setItem('nv_password', p1);
+        localStorage.setItem('nv_password', await sha256(p1));
         location.href = 'email.html';
       }
     }
