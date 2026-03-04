@@ -78,14 +78,38 @@
     });
     const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
     const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
+    async function sha256hex(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return bytesToHex(new Uint8Array(buf));
+    }
+    async function pbkdf2Hash(pw) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const km   = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
+      return bytesToHex(salt) + ':' + bytesToHex(new Uint8Array(bits));
+    }
     async function pbkdf2Verify(pw, stored) {
       if (!stored || !stored.includes(':')) return false;
       const colonAt = stored.indexOf(':');
-      const salt = hexToBytes(stored.slice(0, colonAt));
+      const salt    = hexToBytes(stored.slice(0, colonAt));
       const hashHex = stored.slice(colonAt + 1);
-      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const km   = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
       const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
       return bytesToHex(new Uint8Array(bits)) === hashHex;
+    }
+    async function deriveEncKey(pw, srpSaltHex) {
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+      const k  = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: hexToBytes(srpSaltHex), iterations: 100000, hash: 'SHA-256' },
+        km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
+      );
+      return bytesToHex(new Uint8Array(await crypto.subtle.exportKey('raw', k)));
+    }
+    async function encryptSrp(keyHex, srpArray) {
+      const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['encrypt']);
+      const iv  = crypto.getRandomValues(new Uint8Array(12));
+      const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(srpArray)));
+      return bytesToHex(iv) + ':' + btoa(String.fromCharCode(...new Uint8Array(enc)));
     }
     function toggle() {
       const el = document.getElementById('pwInput');
@@ -93,15 +117,15 @@
       document.getElementById('eyeBtn').innerHTML = el.type === 'text' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
     }
     async function unlock() {
-      const v = document.getElementById('pwInput').value;
+      const v     = document.getElementById('pwInput').value;
       const saved = localStorage.getItem('nv_password');
       const errEl = document.getElementById('unlockError');
-      const wrap = document.getElementById('pwWrap');
+      const wrap  = document.getElementById('pwWrap');
       /* ── rate limiting ── */
       const lockUntil = parseInt(sessionStorage.getItem('nv_fail_until') || '0');
       if (Date.now() < lockUntil) {
         const secs = Math.ceil((lockUntil - Date.now()) / 1000);
-        errEl.innerHTML = `<i class="fa fa-lock"></i> Too many attempts \u2014 try again in ${secs}s`;
+        errEl.innerHTML = `<i class="fa fa-lock"></i> Too many attempts — try again in ${secs}s`;
         errEl.style.display = 'flex';
         return;
       }
@@ -111,7 +135,7 @@
         if (fails >= 5) {
           sessionStorage.setItem('nv_fail_until', Date.now() + 30000);
           sessionStorage.removeItem('nv_fail_count');
-          errEl.innerHTML = '<i class="fa fa-lock"></i> Too many attempts \u2014 locked for 30 seconds';
+          errEl.innerHTML = '<i class="fa fa-lock"></i> Too many attempts — locked for 30 seconds';
         } else {
           errEl.innerHTML = `<i class="fa fa-triangle-exclamation"></i> ${msg} (${fails}/5 attempts)`;
         }
@@ -120,26 +144,61 @@
         document.getElementById('pwInput').value = '';
         setTimeout(() => wrap.classList.remove('shake'), 500);
       }
-      /* ── legacy: no colon = old SHA-256 or plain-text password ── */
-      if (saved && !saved.includes(':')) {
-        errEl.innerHTML = '<i class="fa fa-triangle-exclamation"></i> Security upgrade required \u2014 please <a href="../index.html" onclick="localStorage.removeItem(\'nv_password\');return true;" style="color:var(--green);">reset your password</a>.';
-        errEl.style.display = 'flex';
-        return;
-      }
-      const verified = await pbkdf2Verify(v, saved);
-      if (verified) {
+      async function finishLogin(pw) {
         sessionStorage.removeItem('nv_fail_count');
         sessionStorage.removeItem('nv_fail_until');
-        /* re-derive SRP encryption key for this session */
         const srpSaltHex = localStorage.getItem('nv_srp_salt');
         if (srpSaltHex) {
-          const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(v), 'PBKDF2', false, ['deriveKey']);
-          const encKey = await crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: hexToBytes(srpSaltHex), iterations: 100000, hash: 'SHA-256' },
-            km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
-          );
-          sessionStorage.setItem('nv_enc_key', bytesToHex(new Uint8Array(await crypto.subtle.exportKey('raw', encKey))));
+          sessionStorage.setItem('nv_enc_key', await deriveEncKey(pw, srpSaltHex));
         }
+        sessionStorage.setItem('nv_unlocked', '1');
+        location.href = 'dashboard.html';
+      }
+      /* ── PBKDF2 path (current) ── */
+      if (saved && saved.includes(':')) {
+        if (await pbkdf2Verify(v, saved)) { await finishLogin(v); }
+        else shake('Incorrect password');
+        return;
+      }
+      /* ── Legacy migration: SHA-256 hash (no colon, 64-char hex) ── */
+      if (saved && /^[a-f0-9]{64}$/.test(saved)) {
+        const h = await sha256hex(v);
+        if (h === saved) {
+          /* Silently upgrade: re-hash with PBKDF2, re-encrypt SRP */
+          const newSrpSalt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
+          localStorage.setItem('nv_srp_salt', newSrpSalt);
+          localStorage.setItem('nv_password', await pbkdf2Hash(v));
+          const encKeyHex    = await deriveEncKey(v, newSrpSalt);
+          const srpStored    = localStorage.getItem('nv_srp') || '';
+          /* SRP may be plain JSON (old format) — encrypt it now */
+          if (srpStored.startsWith('[') && !srpStored.includes(':')) {
+            try {
+              const srpArray = JSON.parse(srpStored);
+              localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, srpArray));
+            } catch (_) { /* leave as-is if parse fails */ }
+          }
+          sessionStorage.setItem('nv_enc_key', encKeyHex);
+          sessionStorage.setItem('nv_unlocked', '1');
+          location.href = 'dashboard.html';
+        } else {
+          shake('Incorrect password');
+        }
+        return;
+      }
+      /* ── Legacy migration: plain-text password ── */
+      if (saved && v === saved) {
+        const newSrpSalt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
+        localStorage.setItem('nv_srp_salt', newSrpSalt);
+        localStorage.setItem('nv_password', await pbkdf2Hash(v));
+        const encKeyHex = await deriveEncKey(v, newSrpSalt);
+        const srpStored = localStorage.getItem('nv_srp') || '';
+        if (srpStored.startsWith('[') && !srpStored.includes(':')) {
+          try {
+            const srpArray = JSON.parse(srpStored);
+            localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, srpArray));
+          } catch (_) { /* leave as-is */ }
+        }
+        sessionStorage.setItem('nv_enc_key', encKeyHex);
         sessionStorage.setItem('nv_unlocked', '1');
         location.href = 'dashboard.html';
       } else {
