@@ -302,6 +302,13 @@
   </div><!-- /phone-frame -->
 
   <script>
+    /* ── auth guard ── */
+    (function () {
+      const hasPassword = !!localStorage.getItem('nv_password');
+      const isUnlocked  = sessionStorage.getItem('nv_unlocked') === '1';
+      if (!hasPassword) { location.replace('onboarding.html'); return; }
+      if (!isUnlocked)  { location.replace('welcome-pin.html'); return; }
+    })();
     // 2FA
     const tfaTog = document.getElementById('tfaToggle');
     const tfaLbl = document.getElementById('tfaLabel');

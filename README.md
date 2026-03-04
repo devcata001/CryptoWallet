@@ -81,10 +81,11 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 - **PBKDF2** (100 000 iterations, SHA-256, random 16-byte salt) used for password hashing — salt embedded in stored value as `{saltHex}:{hashHex}`
 - **AES-GCM 256-bit** encrypted Secret Recovery Phrase — never stored in plaintext; key derived from password via PBKDF2 using a separate `nv_srp_salt`
 - Derived AES key exported to `sessionStorage` (`nv_enc_key`) on login/setup — clears automatically on tab/browser close
-- **Auth guard** on dashboard: redirects to PIN screen if `sessionStorage.nv_unlocked` is absent — blocks direct URL navigation
+- **Auth guards** on `dashboard.html` and `settings.html`: redirect to PIN screen if `sessionStorage.nv_unlocked` is absent — blocks direct URL navigation
 - Session token (`nv_unlocked`) stored in `sessionStorage` only — forces re-authentication on browser restart
 - **Rate limiting**: 5 failed PIN attempts trigger a 30-second lockout
 - Password change re-derives and re-encrypts the SRP with the new key — old key invalidated immediately
+- **Full 2048-word BIP39** wordlist loaded from `js/bip39.js` with `crypto.getRandomValues()` for cryptographically secure phrase generation
 - Multi-user support — holdings and transactions keyed per username
 - Password change form requires current-password verification
 
@@ -98,19 +99,22 @@ A polished, mobile-first crypto wallet front-end built with HTML5, CSS3, and van
 ├── README.md
 ├── css/
 │   ├── nova.css               # Design system (variables, components, animations)
+│   ├── dashboard.css          # Dashboard-specific styles (extracted from dashboard.html)
 │   └── style.css              # Legacy styles
 ├── js/
+│   ├── bip39.js               # Full BIP39 English word list (2048 words)
+│   ├── dashboard.js           # Dashboard logic (auth guard, assets, send/buy/receive)
 │   ├── script.js              # Auth, send/buy forms, transaction history, profile
 │   └── prices.js              # CoinGecko price service & holdings renderer
 └── pages/
     ├── onboarding.html
     ├── features.html
     ├── email.html
-    ├── confirm.html           # SRP reveal
+    ├── confirm.html           # SRP reveal — generates phrase from full 2048-word BIP39 list
     ├── create-pin.html        # SRP quiz + sets nv_srp_backed_up flag
     ├── welcome-pin.html
     ├── success.html
-    ├── dashboard.html         # Main app shell
+    ├── dashboard.html         # Main app shell (278 lines — logic in dashboard.js)
     └── settings.html
 ```
 
