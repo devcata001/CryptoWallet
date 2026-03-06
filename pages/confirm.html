@@ -142,7 +142,13 @@
       }
       if (!srp) {
         /* Generate a proper BIP39 mnemonic with valid checksum via ethers.js */
-        const phrase = NW.generateMnemonic();
+        let phrase;
+        try {
+          phrase = NW.generateMnemonic();
+        } catch (e) {
+          document.body.innerHTML = '<div style="padding:40px;color:#ff4d4d;font-family:sans-serif;text-align:center;"><h2>Wallet engine failed to load</h2><p>Please make sure you have an internet connection, then refresh this page.<br><br>Error: ' + e.message + '</p><a href="features.html" style="color:#3DFF20;">Go back</a></div>';
+          return [];
+        }
         srp = phrase.split(' ');
       }
       localStorage.setItem('nv_srp', keyHex ? await encryptSrp(keyHex, srp) : JSON.stringify(srp));

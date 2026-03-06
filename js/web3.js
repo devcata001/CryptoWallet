@@ -473,15 +473,37 @@ var NW = (() => {
             const stored = localStorage.getItem('nv_srp') || '';
             if (!stored || !encKeyHex) return null;
 
-            const key = await crypto.subtle.importKey('raw', fromHex(encKeyHex),
-                { name: 'AES-GCM' }, false, ['decrypt']);
-            const colonAt = stored.indexOf(':');
-            const iv = fromHex(stored.slice(0, colonAt));
-            const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
-            const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-            const words = JSON.parse(new TextDecoder().decode(dec));
-            const phrase = Array.isArray(words) ? words.join(' ') : words;
-            return await this.storeWalletSession(phrase, encKeyHex);
+            let phrase = null;
+
+            // Try AES-GCM encrypted format: "<iv_hex>:<base64_ciphertext>"
+            if (stored.includes(':')) {
+                try {
+                    const key = await crypto.subtle.importKey('raw', fromHex(encKeyHex),
+                        { name: 'AES-GCM' }, false, ['decrypt']);
+                    const colonAt = stored.indexOf(':');
+                    const iv = fromHex(stored.slice(0, colonAt));
+                    const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
+                    const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+                    const words = JSON.parse(new TextDecoder().decode(dec));
+                    phrase = Array.isArray(words) ? words.join(' ') : String(words);
+                } catch (_) { phrase = null; }
+            }
+
+            // Fallback: plain JSON array (legacy format or unencrypted dev wallet)
+            if (!phrase && stored.startsWith('[')) {
+                try {
+                    const words = JSON.parse(stored);
+                    if (Array.isArray(words) && words.length >= 12) phrase = words.join(' ');
+                } catch (_) { phrase = null; }
+            }
+
+            if (!phrase) return null;
+            try {
+                return await this.storeWalletSession(phrase, encKeyHex);
+            } catch (e) {
+                console.error('[NW] storeWalletSession failed:', e.message);
+                return null;
+            }
         },
 
         /* ── Explorer URL helper ─────────────────────────────────────── */

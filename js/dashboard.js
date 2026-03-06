@@ -159,17 +159,30 @@ const RECEIVE_NETWORKS = {
 
 async function deriveAddr(sym) {
   const enc = sessionStorage.getItem('nv_enc_key');
-  if (!enc) return '—';
+  if (!enc) {
+    openNotify('Session expired — please log out and log in again', 'error');
+    return null;
+  }
+  const nv_srp = localStorage.getItem('nv_srp');
+  if (!nv_srp) {
+    openNotify('No wallet found — please create or import a wallet', 'error');
+    return null;
+  }
   try {
     const wallet = await NW.initFromSRP(enc);
+    if (!wallet) {
+      openNotify('Could not read wallet — your recovery phrase may be corrupted. Please reimport.', 'error');
+      return null;
+    }
     const evm = ['ETH', 'USDT', 'USDC', 'BNB', 'USDT_BEP20', 'USDC_BEP20'];
     if (evm.includes(sym)) return wallet.evmAddress;
     if (sym === 'BTC') return wallet.btcAddress;
     if (sym === 'SOL') return wallet.solAddress;
     return wallet.evmAddress;
   } catch (e) {
-    console.warn('[NW] deriveAddr failed:', e.message);
-    return '—';
+    console.error('[NW] deriveAddr failed:', e.message);
+    openNotify('Address error: ' + e.message, 'error');
+    return null;
   }
 }
 
@@ -179,6 +192,10 @@ async function showReceiveAddr() {
   document.getElementById('receiveNetwork').textContent = RECEIVE_NETWORKS[sym] || '';
   document.getElementById('qrWrap').innerHTML = '';
   currentAddr = await deriveAddr(sym);
+  if (!currentAddr) {
+    document.getElementById('walletAddr').textContent = 'Unable to load address';
+    return;
+  }
   document.getElementById('walletAddr').textContent = currentAddr;
   document.getElementById('walletAddr').title = currentAddr;
   const wrap = document.getElementById('qrWrap');

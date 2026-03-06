@@ -151,7 +151,16 @@
         sessionStorage.removeItem('nv_fail_until');
         const srpSaltHex = localStorage.getItem('nv_srp_salt');
         if (srpSaltHex) {
-          sessionStorage.setItem('nv_enc_key', await deriveEncKey(pw, srpSaltHex));
+          const encKeyHex = await deriveEncKey(pw, srpSaltHex);
+          sessionStorage.setItem('nv_enc_key', encKeyHex);
+          // Migrate plain-JSON SRP to encrypted format if not already encrypted
+          const srpStored = localStorage.getItem('nv_srp') || '';
+          if (srpStored.startsWith('[') && !srpStored.includes(':')) {
+            try {
+              const srpArray = JSON.parse(srpStored);
+              localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, srpArray));
+            } catch (_) { /* leave as-is */ }
+          }
         }
         sessionStorage.setItem('nv_unlocked', '1');
         location.href = 'dashboard.html';
