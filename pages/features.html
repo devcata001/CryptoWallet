@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Create Password</title>
   <link rel="stylesheet" href="../css/nova.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
   <style>
     .strength-bar {
       height: 4px;
@@ -33,7 +33,7 @@
   <div class="phone-frame">
     <div class="screen" style="display:flex;flex-direction:column;height:100%;">
       <nav class="top-nav" style="flex-shrink:0;">
-        <a href="onboarding.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
+        <a href="onboarding.html" class="back-btn"><i class="ph-bold ph-arrow-left"></i></a>
         <div class="top-nav-title">
           <h4 id="pageTitle">Create Password</h4>
         </div>
@@ -56,10 +56,11 @@
             <label class="form-label">New Password <span style="color:var(--muted);font-weight:400;">(min 8
                 characters)</span></label>
             <div class="input-wrap">
-              <i class="fa fa-lock icon"></i>
+              <i class="ph-bold ph-lock icon"></i>
               <input type="password" id="pw1" class="nova-input has-icon has-icon-right" placeholder="New password"
                 oninput="checkStrength()" />
-              <button class="icon-right" onclick="toggle('pw1',this)" type="button"><i class="fa fa-eye"></i></button>
+              <button class="icon-right" onclick="toggle('pw1',this)" type="button"><i
+                  class="ph-bold ph-eye"></i></button>
             </div>
             <div class="strength-bar mt-4">
               <div class="strength-fill" id="strengthFill"></div>
@@ -69,10 +70,11 @@
           <div class="form-group mb-20">
             <label class="form-label">Confirm Password</label>
             <div class="input-wrap">
-              <i class="fa fa-lock icon"></i>
+              <i class="ph-bold ph-lock icon"></i>
               <input type="password" id="pw2" class="nova-input has-icon has-icon-right" placeholder="Confirm password"
                 oninput="checkMatch()" />
-              <button class="icon-right" onclick="toggle('pw2',this)" type="button"><i class="fa fa-eye"></i></button>
+              <button class="icon-right" onclick="toggle('pw2',this)" type="button"><i
+                  class="ph-bold ph-eye"></i></button>
             </div>
             <div style="font-size:12px;color:var(--error);margin-top:4px;min-height:16px;" id="matchMsg"></div>
           </div>
@@ -84,25 +86,27 @@
             <textarea id="srpImport" class="nova-input" rows="4"
               placeholder="Enter your 12 or 24-word Secret Recovery Phrase, separated by spaces"
               style="resize:none;line-height:1.7;font-family:var(--font);"></textarea>
-            <div style="font-size:12px;color:var(--muted);margin-top:6px;"><i class="fa fa-shield-halved"
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;"><i class="ph-bold ph-shield-check"
                 style="color:var(--green);"></i> Your phrase is only stored locally on this device.</div>
           </div>
           <div class="form-group mb-20">
             <label class="form-label">New Password</label>
             <div class="input-wrap">
-              <i class="fa fa-lock icon"></i>
+              <i class="ph-bold ph-lock icon"></i>
               <input type="password" id="pw1i" class="nova-input has-icon has-icon-right"
                 placeholder="Create a password" />
-              <button class="icon-right" onclick="toggle('pw1i',this)" type="button"><i class="fa fa-eye"></i></button>
+              <button class="icon-right" onclick="toggle('pw1i',this)" type="button"><i
+                  class="ph-bold ph-eye"></i></button>
             </div>
           </div>
           <div class="form-group mb-20">
             <label class="form-label">Confirm Password</label>
             <div class="input-wrap">
-              <i class="fa fa-lock icon"></i>
+              <i class="ph-bold ph-lock icon"></i>
               <input type="password" id="pw2i" class="nova-input has-icon has-icon-right"
                 placeholder="Confirm password" />
-              <button class="icon-right" onclick="toggle('pw2i',this)" type="button"><i class="fa fa-eye"></i></button>
+              <button class="icon-right" onclick="toggle('pw2i',this)" type="button"><i
+                  class="ph-bold ph-eye"></i></button>
             </div>
           </div>
         </div>
@@ -117,7 +121,7 @@
           </span>
         </label>
         <div id="formError" class="error-msg mb-16" style="display:none;">
-          <i class="fa fa-triangle-exclamation"></i> <span id="formErrMsg"></span>
+          <i class="ph-bold ph-warning"></i> <span id="formErrMsg"></span>
         </div>
         <button class="btn btn-primary" id="continueBtn" onclick="proceed()">Create Wallet</button>
       </div>
@@ -137,7 +141,7 @@
     function toggle(id, btn) {
       const el = document.getElementById(id);
       el.type = el.type === 'password' ? 'text' : 'password';
-      btn.innerHTML = el.type === 'text' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
+      btn.innerHTML = el.type === 'text' ? '<i class="ph-bold ph-eye-slash"></i>' : '<i class="ph-bold ph-eye"></i>';
     }
     function checkStrength() {
       const v = document.getElementById('pw1').value;

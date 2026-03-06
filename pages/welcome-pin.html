@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Unlock Wallet</title>
   <link rel="stylesheet" href="../css/nova.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
   <style>
     @keyframes shake {
 
@@ -40,20 +40,22 @@
         class="fade-in">
         <div
           style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0d2b0d,#1a4a1a);border:2px solid rgba(61,255,32,.4);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;box-shadow:0 0 28px rgba(61,255,32,.2);">
-          🔒</div>
+          <i class="ph-bold ph-lock" style="color:var(--green);"></i>
+        </div>
         <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;">Welcome Back</h2>
         <p style="color:var(--muted);font-size:14px;margin-bottom:32px;">Enter your password to unlock.</p>
         <div class="input-wrap" style="width:100%;" id="pwWrap">
-          <i class="fa fa-lock icon"></i>
+          <i class="ph-bold ph-lock icon"></i>
           <input type="password" id="pwInput" class="nova-input has-icon has-icon-right" placeholder="Password"
             autocomplete="current-password" />
-          <button class="icon-right" onclick="toggle()" type="button" id="eyeBtn"><i class="fa fa-eye"></i></button>
+          <button class="icon-right" onclick="toggle()" type="button" id="eyeBtn"><i
+              class="ph-bold ph-eye"></i></button>
         </div>
         <div id="unlockError" class="error-msg mt-12" style="display:none;width:100%;">
-          <i class="fa fa-triangle-exclamation"></i> Incorrect password
+          <i class="ph-bold ph-warning"></i> Incorrect password
         </div>
         <button class="btn btn-primary mt-20" onclick="unlock()" style="width:100%;">
-          <i class="fa fa-unlock"></i> Unlock
+          <i class="ph-bold ph-lock-open"></i> Unlock
         </button>
         <p style="font-size:13px;color:var(--muted);margin-top:20px;">
           Forgot password? <a href="../index.html" onclick="localStorage.removeItem('nv_password');return true;"
@@ -63,7 +65,7 @@
       <div style="padding:0 24px 32px;text-align:center;">
         <div
           style="font-size:11px;color:var(--muted);background:var(--surface);border-radius:10px;padding:10px;border:1px solid var(--border);">
-          <i class="fa fa-shield-halved" style="color:var(--green);"></i>
+          <i class="ph-bold ph-shield-check" style="color:var(--green);"></i>
           Your keys are stored locally. Nova never sees your password.
         </div>
       </div>
@@ -84,22 +86,22 @@
     }
     async function pbkdf2Hash(pw) {
       const salt = crypto.getRandomValues(new Uint8Array(16));
-      const km   = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
       const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
       return bytesToHex(salt) + ':' + bytesToHex(new Uint8Array(bits));
     }
     async function pbkdf2Verify(pw, stored) {
       if (!stored || !stored.includes(':')) return false;
       const colonAt = stored.indexOf(':');
-      const salt    = hexToBytes(stored.slice(0, colonAt));
+      const salt = hexToBytes(stored.slice(0, colonAt));
       const hashHex = stored.slice(colonAt + 1);
-      const km   = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
       const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, km, 256);
       return bytesToHex(new Uint8Array(bits)) === hashHex;
     }
     async function deriveEncKey(pw, srpSaltHex) {
       const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
-      const k  = await crypto.subtle.deriveKey(
+      const k = await crypto.subtle.deriveKey(
         { name: 'PBKDF2', salt: hexToBytes(srpSaltHex), iterations: 100000, hash: 'SHA-256' },
         km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
       );
@@ -107,25 +109,25 @@
     }
     async function encryptSrp(keyHex, srpArray) {
       const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['encrypt']);
-      const iv  = crypto.getRandomValues(new Uint8Array(12));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
       const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(srpArray)));
       return bytesToHex(iv) + ':' + btoa(String.fromCharCode(...new Uint8Array(enc)));
     }
     function toggle() {
       const el = document.getElementById('pwInput');
       el.type = el.type === 'password' ? 'text' : 'password';
-      document.getElementById('eyeBtn').innerHTML = el.type === 'text' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
+      document.getElementById('eyeBtn').innerHTML = el.type === 'text' ? '<i class="ph-bold ph-eye-slash"></i>' : '<i class="ph-bold ph-eye"></i>';
     }
     async function unlock() {
-      const v     = document.getElementById('pwInput').value;
+      const v = document.getElementById('pwInput').value;
       const saved = localStorage.getItem('nv_password');
       const errEl = document.getElementById('unlockError');
-      const wrap  = document.getElementById('pwWrap');
+      const wrap = document.getElementById('pwWrap');
       /* ── rate limiting ── */
       const lockUntil = parseInt(sessionStorage.getItem('nv_fail_until') || '0');
       if (Date.now() < lockUntil) {
         const secs = Math.ceil((lockUntil - Date.now()) / 1000);
-        errEl.innerHTML = `<i class="fa fa-lock"></i> Too many attempts — try again in ${secs}s`;
+        errEl.innerHTML = `<i class="ph-bold ph-lock"></i> Too many attempts — try again in ${secs}s`;
         errEl.style.display = 'flex';
         return;
       }
@@ -135,9 +137,9 @@
         if (fails >= 5) {
           sessionStorage.setItem('nv_fail_until', Date.now() + 30000);
           sessionStorage.removeItem('nv_fail_count');
-          errEl.innerHTML = '<i class="fa fa-lock"></i> Too many attempts — locked for 30 seconds';
+          errEl.innerHTML = '<i class="ph-bold ph-lock"></i> Too many attempts — locked for 30 seconds';
         } else {
-          errEl.innerHTML = `<i class="fa fa-triangle-exclamation"></i> ${msg} (${fails}/5 attempts)`;
+          errEl.innerHTML = `<i class="ph-bold ph-warning"></i> ${msg} (${fails}/5 attempts)`;
         }
         errEl.style.display = 'flex';
         wrap.classList.add('shake');
@@ -168,8 +170,8 @@
           const newSrpSalt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
           localStorage.setItem('nv_srp_salt', newSrpSalt);
           localStorage.setItem('nv_password', await pbkdf2Hash(v));
-          const encKeyHex    = await deriveEncKey(v, newSrpSalt);
-          const srpStored    = localStorage.getItem('nv_srp') || '';
+          const encKeyHex = await deriveEncKey(v, newSrpSalt);
+          const srpStored = localStorage.getItem('nv_srp') || '';
           /* SRP may be plain JSON (old format) — encrypt it now */
           if (srpStored.startsWith('[') && !srpStored.includes(':')) {
             try {

@@ -4,25 +4,25 @@
 /* ══ AUTH GUARD ══════════════════════════════════════════════════════ */
 (function authGuard() {
   const hasPassword = !!localStorage.getItem('nv_password');
-  const isUnlocked  = sessionStorage.getItem('nv_unlocked') === '1';
+  const isUnlocked = sessionStorage.getItem('nv_unlocked') === '1';
   if (!hasPassword) { location.replace('onboarding.html'); return; }
-  if (!isUnlocked)  { location.replace('welcome-pin.html'); return; }
+  if (!isUnlocked) { location.replace('welcome-pin.html'); return; }
 })();
 
 /* ══ ASSET REGISTRY ══════════════════════════════════════════════════ */
 const ASSETS = [
-  { sym: 'BTC',  name: 'Bitcoin',   cgId: 'bitcoin',       img: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',         color: '#F7931A', price: 65000, change24h: 2.4  },
-  { sym: 'ETH',  name: 'Ethereum',  cgId: 'ethereum',      img: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',       color: '#627EEA', price: 3400,  change24h: 1.8  },
-  { sym: 'BNB',  name: 'BNB',       cgId: 'binancecoin',   img: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',   color: '#F3BA2F', price: 590,   change24h: 0.7  },
-  { sym: 'SOL',  name: 'Solana',    cgId: 'solana',        img: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',        color: '#9945FF', price: 175,   change24h: 5.2  },
-  { sym: 'USDT', name: 'Tether',    cgId: 'tether',        img: 'https://assets.coingecko.com/coins/images/325/small/Tether.png',         color: '#26A17B', price: 1.00,  change24h: 0.02 },
-  { sym: 'USDC', name: 'USD Coin',  cgId: 'usd-coin',      img: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png',          color: '#2775CA', price: 1.00,  change24h: 0.01 },
+  { sym: 'BTC', name: 'Bitcoin', cgId: 'bitcoin', img: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png', color: '#F7931A', price: 65000, change24h: 2.4 },
+  { sym: 'ETH', name: 'Ethereum', cgId: 'ethereum', img: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', color: '#627EEA', price: 3400, change24h: 1.8 },
+  { sym: 'BNB', name: 'BNB', cgId: 'binancecoin', img: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', color: '#F3BA2F', price: 590, change24h: 0.7 },
+  { sym: 'SOL', name: 'Solana', cgId: 'solana', img: 'https://assets.coingecko.com/coins/images/4128/small/solana.png', color: '#9945FF', price: 175, change24h: 5.2 },
+  { sym: 'USDT', name: 'Tether', cgId: 'tether', img: 'https://assets.coingecko.com/coins/images/325/small/Tether.png', color: '#26A17B', price: 1.00, change24h: 0.02 },
+  { sym: 'USDC', name: 'USD Coin', cgId: 'usd-coin', img: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png', color: '#2775CA', price: 1.00, change24h: 0.01 },
 ];
 
 const DEFAULT_HOLDINGS = { BTC: 0, ETH: 0, BNB: 0, SOL: 0, USDT: 0, USDC: 0 };
 
-function getH()    { const s = JSON.parse(localStorage.getItem('nv_holdings') || '{}'); return Object.assign({}, DEFAULT_HOLDINGS, s); }
-function saveH(h)  { localStorage.setItem('nv_holdings', JSON.stringify(h)); }
+function getH() { const s = JSON.parse(localStorage.getItem('nv_holdings') || '{}'); return Object.assign({}, DEFAULT_HOLDINGS, s); }
+function saveH(h) { localStorage.setItem('nv_holdings', JSON.stringify(h)); }
 
 /* ══ PRICE FETCHING ══════════════════════════════════════════════════ */
 const CACHE_KEY = 'nv_price_cache';
@@ -48,10 +48,10 @@ async function fetchPrices() {
   }
   try {
     const ids = ASSETS.map(a => a.cgId).join(',');
-    const url  = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&precision=6`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&precision=6`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error('bad response');
-    const data   = await res.json();
+    const data = await res.json();
     const prices = {};
     ASSETS.forEach(a => {
       const d = data[a.cgId];
@@ -99,25 +99,25 @@ function renderAll() {
   balEl.textContent = '$' + fmt(total, 2);
   const len = balEl.textContent.length;
   balEl.classList.remove('shrink-1', 'shrink-2', 'shrink-3');
-  if      (len > 14) balEl.classList.add('shrink-3');
+  if (len > 14) balEl.classList.add('shrink-3');
   else if (len > 11) balEl.classList.add('shrink-2');
-  else if (len > 8)  balEl.classList.add('shrink-1');
+  else if (len > 8) balEl.classList.add('shrink-1');
 
   const chgPct = total > 0 ? (totalChange / (total - totalChange)) * 100 : 0;
   const upDown = totalChange >= 0 ? 'up' : 'down';
-  const arrow  = totalChange >= 0 ? 'caret-up' : 'caret-down';
-  const chgEl  = document.getElementById('totalChangeEl');
+  const arrow = totalChange >= 0 ? 'caret-up' : 'caret-down';
+  const chgEl = document.getElementById('totalChangeEl');
   chgEl.className = 'balance-change ' + upDown;
-  chgEl.innerHTML = `<i class="fa fa-${arrow}"></i> ${totalChange >= 0 ? '+' : ''}$${fmt(Math.abs(totalChange), 2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%) today`;
+  chgEl.innerHTML = `<i class="ph-bold ph-${arrow}"></i> ${totalChange >= 0 ? '+' : ''}$${fmt(Math.abs(totalChange), 2)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(2)}%) today`;
 
   updateBuyPreview();
   renderTxList();
 }
 
 /* ── formatters ── */
-function fmt(n, dp)  { return Number(n).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }); }
+function fmt(n, dp) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }); }
 function fmtPrice(p) {
-  if (p >= 1)    return '$' + fmt(p, 2);
+  if (p >= 1) return '$' + fmt(p, 2);
   if (p >= 0.01) return '$' + Number(p).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   return '$' + Number(p).toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
 }
@@ -136,8 +136,8 @@ function switchTab(btn, panel) {
 function openSheet(id) {
   document.getElementById(id).classList.add('open');
   if (id === 'receiveSheet') showReceiveAddr();
-  if (id === 'searchSheet')  renderPriceList();
-  if (id === 'buySheet')     renderBuyPrices();
+  if (id === 'searchSheet') renderPriceList();
+  if (id === 'buySheet') renderBuyPrices();
 }
 function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
 function bgClose(e, id) { if (e.target === document.getElementById(id)) closeSheet(id); }
@@ -146,48 +146,48 @@ function bgClose(e, id) { if (e.target === document.getElementById(id)) closeShe
 let currentAddr = '';
 
 const ADDR_NETWORK_KEY = {
-  ETH:        'EVM_ETH',
-  USDT:       'EVM_ETH',
-  USDC:       'EVM_ETH',
-  BNB:        'EVM_BNB',
+  ETH: 'EVM_ETH',
+  USDT: 'EVM_ETH',
+  USDC: 'EVM_ETH',
+  BNB: 'EVM_BNB',
   USDT_BEP20: 'EVM_BNB',
   USDC_BEP20: 'EVM_BNB',
-  BTC:        'BTC',
-  SOL:        'SOL',
+  BTC: 'BTC',
+  SOL: 'SOL',
 };
 
 const RECEIVE_NETWORKS = {
-  ETH:        'Ethereum Mainnet (ERC-20)',
-  BNB:        'BNB Smart Chain (BEP-20)',
-  USDT:       'Ethereum Mainnet (ERC-20)',
+  ETH: 'Ethereum Mainnet (ERC-20)',
+  BNB: 'BNB Smart Chain (BEP-20)',
+  USDT: 'Ethereum Mainnet (ERC-20)',
   USDT_BEP20: 'BNB Smart Chain (BEP-20)',
-  USDC:       'Ethereum Mainnet (ERC-20)',
+  USDC: 'Ethereum Mainnet (ERC-20)',
   USDC_BEP20: 'BNB Smart Chain (BEP-20)',
-  BTC:        'Bitcoin Network (Native SegWit)',
-  SOL:        'Solana Mainnet',
+  BTC: 'Bitcoin Network (Native SegWit)',
+  SOL: 'Solana Mainnet',
 };
 
 async function deriveAddr(sym) {
-  const netKey  = ADDR_NETWORK_KEY[sym] || sym;
-  const keyHex  = sessionStorage.getItem('nv_enc_key');
-  const stored  = localStorage.getItem('nv_srp') || '';
+  const netKey = ADDR_NETWORK_KEY[sym] || sym;
+  const keyHex = sessionStorage.getItem('nv_enc_key');
+  const stored = localStorage.getItem('nv_srp') || '';
   let srp;
   if (stored.includes(':') && keyHex) {
     try {
-      const key     = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['decrypt']);
+      const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['decrypt']);
       const colonAt = stored.indexOf(':');
-      const iv      = hexToBytes(stored.slice(0, colonAt));
-      const data    = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
-      const dec     = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+      const iv = hexToBytes(stored.slice(0, colonAt));
+      const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
+      const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
       srp = JSON.parse(new TextDecoder().decode(dec));
     } catch (_) { srp = []; }
   } else {
     srp = JSON.parse(stored || '[]');
   }
-  const seed    = srp.join(' ') || 'nova-wallet-default-seed';
+  const seed = srp.join(' ') || 'nova-wallet-default-seed';
   const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed + ':' + netKey));
-  const bytes   = new Uint8Array(hashBuf);
-  const hex     = bytesToHex(bytes);
+  const bytes = new Uint8Array(hashBuf);
+  const hex = bytesToHex(bytes);
   if (netKey === 'BTC') return 'bc1q' + hex.slice(0, 38);
   if (netKey === 'SOL') {
     const b58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -216,8 +216,8 @@ function copyAddr() {
 }
 
 /* ══ TRANSACTIONS ════════════════════════════════════════════════════ */
-function getTxs()       { return JSON.parse(localStorage.getItem('nv_txs') || '[]'); }
-function saveTxs(txs)   { localStorage.setItem('nv_txs', JSON.stringify(txs.slice(0, 100))); }
+function getTxs() { return JSON.parse(localStorage.getItem('nv_txs') || '[]'); }
+function saveTxs(txs) { localStorage.setItem('nv_txs', JSON.stringify(txs.slice(0, 100))); }
 
 function logTx(type, sym, qty, usd, addr) {
   const txs = getTxs();
@@ -227,25 +227,25 @@ function logTx(type, sym, qty, usd, addr) {
 
 function renderTxList() {
   const txs = getTxs();
-  const el  = document.getElementById('txList');
+  const el = document.getElementById('txList');
   if (!txs.length) {
-    el.innerHTML = '<div class="empty-state"><i class="fa fa-clock-rotate-left"></i>No transactions yet.</div>';
+    el.innerHTML = '<div class="empty-state"><i class="ph-bold ph-clock-counter-clockwise"></i>No transactions yet.</div>';
     return;
   }
   const isStable = s => ['USDT', 'USDC'].includes(s);
   el.innerHTML = txs.map(tx => {
-    const a        = ASSETS.find(x => x.sym === tx.sym) || {};
-    const icon     = tx.type === 'buy' ? 'fa-arrow-down' : 'fa-arrow-up';
-    const iconBg   = tx.type === 'buy' ? 'rgba(61,255,32,.15)' : 'rgba(255,77,77,.15)';
-    const iconCol  = tx.type === 'buy' ? 'var(--green)' : 'var(--error)';
-    const label    = tx.type === 'buy' ? 'Received' : 'Sent';
-    const qtyFmt   = fmt(tx.qty, isStable(tx.sym) ? 2 : 6);
-    const date     = new Date(tx.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const time     = new Date(tx.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const a = ASSETS.find(x => x.sym === tx.sym) || {};
+    const icon = tx.type === 'buy' ? 'ph-arrow-down' : 'ph-arrow-up';
+    const iconBg = tx.type === 'buy' ? 'rgba(61,255,32,.15)' : 'rgba(255,77,77,.15)';
+    const iconCol = tx.type === 'buy' ? 'var(--green)' : 'var(--error)';
+    const label = tx.type === 'buy' ? 'Received' : 'Sent';
+    const qtyFmt = fmt(tx.qty, isStable(tx.sym) ? 2 : 6);
+    const date = new Date(tx.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const time = new Date(tx.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const shortAddr = tx.addr ? tx.addr.slice(0, 6) + '…' + tx.addr.slice(-4) : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="width:40px;height:40px;border-radius:50%;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="fa ${icon}" style="color:${iconCol};font-size:15px;"></i>
+        <i class="ph-bold ${icon}" style="color:${iconCol};font-size:15px;"></i>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;font-size:14px;">${label} ${tx.sym}</div>
@@ -261,45 +261,45 @@ function renderTxList() {
 
 /* ══ SEND ════════════════════════════════════════════════════════════ */
 const ADDR_FORMATS = {
-  EVM: { re: /^0x[a-fA-F0-9]{40}$/,                             hint: 'Must be 0x followed by 40 hex characters' },
-  BTC: { re: /^(bc1[a-z0-9]{25,39}|[13][a-zA-Z0-9]{25,34})$/, hint: 'Invalid Bitcoin address format'           },
-  SOL: { re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,                  hint: 'Invalid Solana address format'           },
+  EVM: { re: /^0x[a-fA-F0-9]{40}$/, hint: 'Must be 0x followed by 40 hex characters' },
+  BTC: { re: /^(bc1[a-z0-9]{25,39}|[13][a-zA-Z0-9]{25,34})$/, hint: 'Invalid Bitcoin address format' },
+  SOL: { re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, hint: 'Invalid Solana address format' },
 };
 const SYM_ADDR_TYPE = { ETH: 'EVM', BNB: 'EVM', USDT: 'EVM', USDC: 'EVM', BTC: 'BTC', SOL: 'SOL' };
 
 function validateSendAddr(addr, sym) {
   const type = SYM_ADDR_TYPE[sym] || 'EVM';
-  const f    = ADDR_FORMATS[type];
+  const f = ADDR_FORMATS[type];
   return f.re.test(addr) ? null : f.hint;
 }
 
 function updateSendPreview() {
   const sym = document.getElementById('sendAsset').value;
   const amt = parseFloat(document.getElementById('sendAmt').value) || 0;
-  const a   = ASSETS.find(x => x.sym === sym);
-  const h   = getH();
+  const a = ASSETS.find(x => x.sym === sym);
+  const h = getH();
   if (!a || !amt) { document.getElementById('sendPreview').innerHTML = ''; return; }
   const stable = ['USDT', 'USDC'].includes(sym);
-  const fee    = stable ? 2 : amt * 0.002;
-  const usd    = amt * a.price;
+  const fee = stable ? 2 : amt * 0.002;
+  const usd = amt * a.price;
   document.getElementById('sendPreview').innerHTML =
     `≈ $${fmt(usd, 2)} USD &nbsp;·&nbsp; Fee ≈ ${stable ? '$' + fee : fee.toFixed(6) + ' ' + sym} &nbsp;·&nbsp; Held: ${fmt(h[sym] || 0, stable ? 2 : 6)} ${sym}`;
 }
 
 function doSend() {
-  const addr   = document.getElementById('sendAddr').value.trim();
-  const amt    = parseFloat(document.getElementById('sendAmt').value) || 0;
-  const sym    = document.getElementById('sendAsset').value;
-  const errEl  = document.getElementById('sendError');
+  const addr = document.getElementById('sendAddr').value.trim();
+  const amt = parseFloat(document.getElementById('sendAmt').value) || 0;
+  const sym = document.getElementById('sendAsset').value;
+  const errEl = document.getElementById('sendError');
   const errMsg = document.getElementById('sendErrMsg');
   const se = m => { errMsg.textContent = m; errEl.style.display = 'flex'; };
   errEl.style.display = 'none';
-  if (!addr)                     return se('Enter a recipient address');
+  if (!addr) return se('Enter a recipient address');
   const addrErr = validateSendAddr(addr, sym);
-  if (addrErr)                   return se(addrErr);
-  if (!amt || amt <= 0)          return se('Enter an amount > 0');
+  if (addrErr) return se(addrErr);
+  if (!amt || amt <= 0) return se('Enter an amount > 0');
   const h = getH();
-  if ((h[sym] || 0) < amt)       return se('Insufficient ' + sym + ' balance');
+  if ((h[sym] || 0) < amt) return se('Insufficient ' + sym + ' balance');
   h[sym] = (h[sym] || 0) - amt;
   saveH(h);
   const usd = amt * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
@@ -307,7 +307,7 @@ function doSend() {
   renderAll();
   closeSheet('sendSheet');
   document.getElementById('sendAddr').value = '';
-  document.getElementById('sendAmt').value  = '';
+  document.getElementById('sendAmt').value = '';
   openTxModal('send', sym, amt, usd, addr);
 }
 
@@ -315,9 +315,9 @@ function doSend() {
 function updateBuyPreview() {
   const sym = document.getElementById('buyAsset') ? document.getElementById('buyAsset').value : 'ETH';
   const usd = parseFloat(document.getElementById('buyAmt') ? document.getElementById('buyAmt').value : 0) || 0;
-  const a   = ASSETS.find(x => x.sym === sym);
+  const a = ASSETS.find(x => x.sym === sym);
   if (!a || !usd) { document.getElementById('buyPreview').innerHTML = ''; return; }
-  const qty    = usd / a.price;
+  const qty = usd / a.price;
   const stable = ['USDT', 'USDC'].includes(sym);
   document.getElementById('buyPreview').innerHTML =
     `You receive: <span style="color:var(--green);font-weight:700;">${fmt(qty, stable ? 2 : 6)} ${sym}</span> &nbsp;·&nbsp; 1 ${sym} = ${fmtPrice(a.price)}`;
@@ -326,10 +326,10 @@ function updateBuyPreview() {
 function doBuy() {
   const sym = document.getElementById('buyAsset').value;
   const usd = parseFloat(document.getElementById('buyAmt').value) || 0;
-  const a   = ASSETS.find(x => x.sym === sym);
+  const a = ASSETS.find(x => x.sym === sym);
   if (!a || usd <= 0) { openNotify('Enter a USD amount', 'error'); return; }
   const qty = usd / a.price;
-  const h   = getH();
+  const h = getH();
   const currentTotal = ASSETS.reduce((sum, x) => sum + (h[x.sym] || 0) * x.price, 0);
   if (currentTotal < 200) {
     if (currentTotal + usd > 200) {
@@ -388,33 +388,33 @@ function openNotify(msg, type) {
   const el = document.createElement('div');
   el.className = 'notify notify-' + (type || 'success');
   el.style.pointerEvents = 'all';
-  el.innerHTML = `<i class="fa fa-${type === 'error' ? 'triangle-exclamation' : 'circle-check'}"></i> ${msg}`;
+  el.innerHTML = `<i class="ph-bold ph-${type === 'error' ? 'warning' : 'check-circle'}"></i> ${msg}`;
   document.getElementById('notifyArea').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
 
 /* ══ TX SUCCESS MODAL ════════════════════════════════════════════════ */
 function openTxModal(type, sym, qty, usd, addr) {
-  const stable  = ['USDT', 'USDC'].includes(sym);
-  const qtyStr  = fmt(qty, stable ? 2 : 6);
-  const a       = ASSETS.find(x => x.sym === sym) || {};
-  const fee     = stable ? (type === 'send' ? '$2.00' : '—') : (type === 'send' ? fmt(qty * 0.002, 6) + ' ' + sym : '—');
-  const now     = new Date();
-  const ts      = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                + ', ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  const isSend  = type === 'send';
+  const stable = ['USDT', 'USDC'].includes(sym);
+  const qtyStr = fmt(qty, stable ? 2 : 6);
+  const a = ASSETS.find(x => x.sym === sym) || {};
+  const fee = stable ? (type === 'send' ? '$2.00' : '—') : (type === 'send' ? fmt(qty * 0.002, 6) + ' ' + sym : '—');
+  const now = new Date();
+  const ts = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    + ', ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const isSend = type === 'send';
 
   document.getElementById('txModalTitle').textContent = isSend ? 'Sent' : 'Bought';
-  document.getElementById('txModalAmt').textContent   = (isSend ? '-' : '+') + qtyStr + ' ' + sym;
-  document.getElementById('txModalUsd').textContent   = '≈ $' + fmt(usd, 2) + ' USD';
+  document.getElementById('txModalAmt').textContent = (isSend ? '-' : '+') + qtyStr + ' ' + sym;
+  document.getElementById('txModalUsd').textContent = '≈ $' + fmt(usd, 2) + ' USD';
 
   document.getElementById('txModalRing')?.classList.toggle('send', isSend);
   document.getElementById('txModalAmt')?.classList.toggle('send', isSend);
 
   const rows = [
     ['Status', '<span style="color:#3DFF20;font-weight:700;">Confirmed ✓</span>'],
-    ['Type',   isSend ? 'Send' : 'Buy'],
-    ['Asset',  `<img src="${a.img || ''}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px;" /> ${sym}`],
+    ['Type', isSend ? 'Send' : 'Buy'],
+    ['Asset', `<img src="${a.img || ''}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px;" /> ${sym}`],
     ...(addr ? [['To', addr.slice(0, 6) + '…' + addr.slice(-4)]] : []),
     ['Network fee', fee],
     ['Date', ts],
@@ -428,8 +428,8 @@ function openTxModal(type, sym, qty, usd, addr) {
 
 /* ══ BACKUP WARNING ══════════════════════════════════════════════════ */
 (function checkBackup() {
-  const backedUp   = !!localStorage.getItem('nv_srp_backed_up');
-  const banner     = document.getElementById('backupWarnBanner');
+  const backedUp = !!localStorage.getItem('nv_srp_backed_up');
+  const banner = document.getElementById('backupWarnBanner');
   if (!banner || backedUp) return;
   const snoozeUntil = parseInt(localStorage.getItem('nv_backup_snooze_until') || '0', 10);
   if (Date.now() < snoozeUntil) return;
@@ -441,7 +441,7 @@ function snoozeBackupWarn() {
   const banner = document.getElementById('backupWarnBanner');
   if (banner) {
     banner.style.transition = 'opacity .3s';
-    banner.style.opacity    = '0';
+    banner.style.opacity = '0';
     setTimeout(() => (banner.style.display = 'none'), 300);
   }
 }
@@ -452,7 +452,7 @@ const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)
 
 /* ══ BOOT: enforce $200 cap then render ══════════════════════════════ */
 (function enforceCapOnLoad() {
-  const h     = getH();
+  const h = getH();
   const total = ASSETS.reduce((sum, a) => sum + (h[a.sym] || 0) * a.price, 0);
   if (total > 200) saveH(Object.fromEntries(ASSETS.map(a => [a.sym, 0])));
 })();

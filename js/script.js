@@ -218,7 +218,7 @@
             if (!text || text === 'Click Generate') return notify('Generate address first', 'error');
             navigator.clipboard.writeText(text).then(() => {
                 copyBtn.textContent = 'Copied!';
-                setTimeout(() => copyBtn.innerHTML = '<i class="fa fa-copy"></i> Copy', 1500);
+                setTimeout(() => copyBtn.innerHTML = '<i class="ph-bold ph-copy"></i> Copy', 1500);
             });
         });
         function generateQR(text) {

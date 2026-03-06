@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Secret Recovery Phrase</title>
   <link rel="stylesheet" href="../css/nova.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
   <style>
     .srp-grid {
       display: grid;
@@ -62,7 +62,7 @@
   <div class="phone-frame">
     <div class="screen" style="display:flex;flex-direction:column;height:100%;">
       <nav class="top-nav" style="flex-shrink:0;">
-        <a href="email.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
+        <a href="email.html" class="back-btn"><i class="ph-bold ph-arrow-left"></i></a>
         <div class="top-nav-title">
           <h4>Recovery Phrase</h4>
         </div>
@@ -84,7 +84,7 @@
           <div class="reveal-overlay" id="revealOverlay" onclick="revealSRP()">
             <div
               style="background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;padding:16px 24px;text-align:center;">
-              <i class="fa fa-eye" style="font-size:24px;color:var(--green);display:block;margin-bottom:8px;"></i>
+              <i class="ph-bold ph-eye" style="font-size:24px;color:var(--green);display:block;margin-bottom:8px;"></i>
               <div style="font-weight:700;font-size:14px;">Tap to reveal</div>
               <div style="font-size:12px;color:var(--muted);margin-top:4px;">Make sure no one is watching</div>
             </div>
@@ -92,7 +92,7 @@
         </div>
         <div
           style="background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.2);border-radius:12px;padding:14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
-          <i class="fa fa-triangle-exclamation" style="color:var(--error);margin-top:2px;flex-shrink:0;"></i>
+          <i class="ph-bold ph-warning" style="color:var(--error);margin-top:2px;flex-shrink:0;"></i>
           <span style="font-size:12px;color:var(--muted2);line-height:1.5;">Do not screenshot this page. Screenshots are
             stored in the cloud and can be accessed by others.</span>
         </div>
@@ -106,7 +106,7 @@
         </label>
         <button class="btn btn-primary" id="nextBtn" onclick="location.href='create-pin.html'" disabled
           style="opacity:.4;cursor:not-allowed;">
-          <i class="fa fa-check-circle"></i> I saved it — next step
+          <i class="ph-bold ph-check-circle"></i> I saved it — next step
         </button>
       </div>
     </div>

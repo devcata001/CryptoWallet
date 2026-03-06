@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Settings</title>
   <link rel="stylesheet" href="../css/nova.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
   <style>
     .screen {
       display: flex;
@@ -127,7 +127,7 @@
   <div class="phone-frame" style="position:relative;">
     <div class="screen">
       <nav class="top-nav" style="flex-shrink:0;">
-        <a href="dashboard.html" class="back-btn"><i class="fa fa-arrow-left"></i></a>
+        <a href="dashboard.html" class="back-btn"><i class="ph-bold ph-arrow-left"></i></a>
         <div class="top-nav-title">
           <h4>Settings</h4>
         </div>
@@ -148,14 +148,14 @@
             <div class="settings-label">Security</div>
             <div class="settings-item" onclick="openSheet('changePinSheet')">
               <div class="left">
-                <i class="fa fa-lock" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-lock" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Change Password</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="toggleTwoFA()">
               <div class="left">
-                <i class="fa fa-shield-halved" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-shield-check" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Two-Factor Auth</div>
               </div>
               <div class="right">
@@ -165,10 +165,10 @@
             </div>
             <div class="settings-item" onclick="alert('Biometrics — coming soon')">
               <div class="left">
-                <i class="fa fa-fingerprint" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-fingerprint" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Biometric Login</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
           </div>
 
@@ -177,25 +177,25 @@
             <div class="settings-label">Wallet</div>
             <div class="settings-item" onclick="location.href='confirm.html'">
               <div class="left">
-                <i class="fa fa-shield-halved" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-shield-check" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Recovery Phrase</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Private key — demo only')">
               <div class="left">
-                <i class="fa fa-key" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-key" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Export Private Key</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Networks — coming soon')">
               <div class="left">
-                <i class="fa fa-network-wired" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <i class="ph-bold ph-network" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Networks</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">Mainnet</span><i
-                  class="fa fa-chevron-right"></i></div>
+                  class="ph-bold ph-caret-right"></i></div>
             </div>
           </div>
 
@@ -204,26 +204,26 @@
             <div class="settings-label">Preferences</div>
             <div class="settings-item" onclick="alert('Currency — coming soon')">
               <div class="left">
-                <i class="fa fa-dollar-sign" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <i class="ph-bold ph-currency-dollar" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
                 <div class="item-title">Currency</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">USD</span><i
-                  class="fa fa-chevron-right"></i></div>
+                  class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Language — coming soon')">
               <div class="left">
-                <i class="fa fa-globe" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <i class="ph-bold ph-globe" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Language</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">English</span><i
-                  class="fa fa-chevron-right"></i></div>
+                  class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Notifications — coming soon')">
               <div class="left">
-                <i class="fa fa-bell" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <i class="ph-bold ph-bell" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">Notifications</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
           </div>
 
@@ -232,39 +232,39 @@
             <div class="settings-label">Support</div>
             <div class="settings-item" onclick="alert('Help — coming soon')">
               <div class="left">
-                <i class="fa fa-circle-question" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
-                <div class="item-title">Help & Support</div>
+                <i class="ph-bold ph-question" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <div class="item-title">Help &amp; Support</div>
               </div>
-              <div class="right"><i class="fa fa-chevron-right"></i></div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
             </div>
             <div class="settings-item" onclick="alert('Nova Wallet v1.0.0')">
               <div class="left">
-                <i class="fa fa-info-circle" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
+                <i class="ph-bold ph-info" style="background:rgba(255,255,255,.06);color:var(--muted2);"></i>
                 <div class="item-title">About</div>
               </div>
               <div class="right"><span style="font-size:12px;color:var(--muted);">v1.0.0</span><i
-                  class="fa fa-chevron-right"></i></div>
+                  class="ph-bold ph-caret-right"></i></div>
             </div>
           </div>
 
           <button class="btn btn-ghost mb-12" id="logoutBtn"
             style="border-color:rgba(255,77,77,.4);color:var(--error);">
-            <i class="fa fa-right-from-bracket"></i> Log Out
+            <i class="ph-bold ph-sign-out"></i> Log Out
           </button>
           <button class="btn mb-32" id="resetBtn"
             style="background:rgba(255,77,77,.1);color:var(--error);border:1px solid rgba(255,77,77,.2);border-radius:50px;">
-            <i class="fa fa-trash"></i> Reset Wallet
+            <i class="ph-bold ph-trash"></i> Reset Wallet
           </button>
         </div>
       </div>
 
       <!-- Bottom Nav -->
       <nav class="bottom-nav" style="flex-shrink:0;">
-        <a href="dashboard.html"><i class="fa fa-house"></i><span>Home</span></a>
-        <a href="#"><i class="fa fa-chart-line"></i><span>Chart</span></a>
-        <a href="#"><i class="fa fa-globe"></i><span>Explore</span></a>
-        <a href="#"><i class="fa fa-wallet"></i><span>Wallet</span></a>
-        <a href="settings.html" class="active"><i class="fa fa-gear"></i><span>Settings</span></a>
+        <a href="dashboard.html"><i class="ph-bold ph-house"></i><span>Home</span></a>
+        <a href="#"><i class="ph-bold ph-chart-line-up"></i><span>Chart</span></a>
+        <a href="#"><i class="ph-bold ph-globe"></i><span>Explore</span></a>
+        <a href="#"><i class="ph-bold ph-wallet"></i><span>Wallet</span></a>
+        <a href="settings.html" class="active"><i class="ph-bold ph-gear"></i><span>Settings</span></a>
       </nav>
     </div>
 
@@ -288,11 +288,11 @@
           <input type="password" id="confirmPin" class="nova-input" placeholder="Confirm new password" />
         </div>
         <div id="pinSheetError" class="error-msg mb-16" style="display:none;">
-          <i class="fa fa-triangle-exclamation"></i>
+          <i class="ph-bold ph-warning"></i>
           <span id="pinSheetErrMsg"></span>
         </div>
         <button class="btn btn-primary" onclick="doChangePin()">
-          <i class="fa fa-key"></i> Update Password
+          <i class="ph-bold ph-key"></i> Update Password
         </button>
       </div>
     </div>
@@ -305,9 +305,9 @@
     /* ── auth guard ── */
     (function () {
       const hasPassword = !!localStorage.getItem('nv_password');
-      const isUnlocked  = sessionStorage.getItem('nv_unlocked') === '1';
+      const isUnlocked = sessionStorage.getItem('nv_unlocked') === '1';
       if (!hasPassword) { location.replace('onboarding.html'); return; }
-      if (!isUnlocked)  { location.replace('welcome-pin.html'); return; }
+      if (!isUnlocked) { location.replace('welcome-pin.html'); return; }
     })();
     // 2FA
     const tfaTog = document.getElementById('tfaToggle');
@@ -404,7 +404,7 @@
       const el = document.createElement('div');
       el.className = 'notify notify-' + (type || 'success');
       el.style.pointerEvents = 'all';
-      el.innerHTML = `<i class="fa fa-${type === 'error' ? 'triangle-exclamation' : 'circle-check'}"></i> ${msg}`;
+      el.innerHTML = `<i class="ph-bold ph-${type === 'error' ? 'warning' : 'check-circle'}"></i> ${msg}`;
       document.getElementById('notifyArea').appendChild(el);
       setTimeout(() => el.remove(), 3500);
     }
