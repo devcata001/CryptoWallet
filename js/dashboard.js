@@ -305,14 +305,18 @@ async function doSend() {
     }
 
     const usd = amt * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
+    // Optimistically deduct sent amount from local holdings immediately
+    const hNow = getH();
+    hNow[sym] = Math.max(0, (hNow[sym] || 0) - amt);
+    saveH(hNow);
     logTx('send', sym, amt, usd, addr, txHash);
     renderAll();
     closeSheet('sendSheet');
     document.getElementById('sendAddr').value = '';
     document.getElementById('sendAmt').value = '';
     openTxModal('send', sym, amt, usd, addr, txHash);
-    // Refresh on-chain balances after a short delay
-    setTimeout(fetchOnChainBalances, 8000);
+    // Refresh on-chain balances after a short delay to confirm real state
+    setTimeout(fetchOnChainBalances, 12000);
 
   } catch (e) {
     const msg = e.message || 'Transaction failed';
@@ -401,15 +405,15 @@ function openNotify(msg, type) {
 }
 
 /* ══ TX SUCCESS MODAL ════════════════════════════════════════════════ */
-function openTxModal(type, sym, qty, usd, addr) {
+function openTxModal(type, sym, qty, usd, addr, txHash) {
   const stable = ['USDT', 'USDC'].includes(sym);
   const qtyStr = fmt(qty, stable ? 2 : 6);
   const a = ASSETS.find(x => x.sym === sym) || {};
-  const fee = stable ? (type === 'send' ? '$2.00' : '—') : (type === 'send' ? fmt(qty * 0.002, 6) + ' ' + sym : '—');
   const now = new Date();
   const ts = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     + ', ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   const isSend = type === 'send';
+  const explorerUrl = txHash ? NW.explorerUrl(txHash, sym) : null;
 
   document.getElementById('txModalTitle').textContent = isSend ? 'Sent' : 'Bought';
   document.getElementById('txModalAmt').textContent = (isSend ? '-' : '+') + qtyStr + ' ' + sym;
@@ -418,12 +422,16 @@ function openTxModal(type, sym, qty, usd, addr) {
   document.getElementById('txModalRing')?.classList.toggle('send', isSend);
   document.getElementById('txModalAmt')?.classList.toggle('send', isSend);
 
+  const statusHtml = isSend
+    ? '<span style="color:#f5a623;font-weight:700;">Broadcast · Pending ⏳</span>'
+    : '<span style="color:#3DFF20;font-weight:700;">Confirmed ✓</span>';
+
   const rows = [
-    ['Status', '<span style="color:#3DFF20;font-weight:700;">Confirmed ✓</span>'],
+    ['Status', statusHtml],
     ['Type', isSend ? 'Send' : 'Buy'],
-    ['Asset', `<img src="${a.img || ''}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px;" /> ${sym}`],
+    ['Asset', `<img src="${a.img || ''}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'" /> ${sym}`],
     ...(addr ? [['To', addr.slice(0, 6) + '…' + addr.slice(-4)]] : []),
-    ['Network fee', fee],
+    ...(explorerUrl ? [['Tx Hash', `<a href="${explorerUrl}" target="_blank" rel="noopener" style="color:var(--green);text-decoration:none;font-size:11px;">${txHash.slice(0, 10)}… ↗</a>`]] : []),
     ['Date', ts],
   ];
   document.getElementById('txModalRows').innerHTML = rows
