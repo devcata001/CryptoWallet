@@ -489,16 +489,22 @@ async function fetchOnChainBalances() {
     if (!walletData) throw new Error('Wallet not available');
     const oldH = getH();
     const balances = await NW.fetchAllBalances(walletData);
-    // Detect incoming transfers: log a receive entry for any asset that increased
-    ['ETH', 'BNB', 'SOL', 'BTC', 'USDT', 'USDC'].forEach(sym => {
-      const diff = (balances[sym] || 0) - (oldH[sym] || 0);
-      if (diff > 0.000001) {
-        const usd = diff * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
-        logTx('buy', sym, diff, usd, '', '');
-      }
-    });
-    saveH(balances);
-    renderAll();
+    // Only replace local holdings when the on-chain wallet actually has funds.
+    // If every balance comes back as 0 the address is empty on-chain (e.g. a fresh
+    // or unfunded wallet) and we must NOT wipe any locally-added demo/test holdings.
+    const hasOnChainBalance = Object.values(balances).some(v => v > 0.000001);
+    if (hasOnChainBalance) {
+      // Detect incoming transfers: log a receive entry for any asset that increased
+      ['ETH', 'BNB', 'SOL', 'BTC', 'USDT', 'USDC'].forEach(sym => {
+        const diff = (balances[sym] || 0) - (oldH[sym] || 0);
+        if (diff > 0.000001) {
+          const usd = diff * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
+          logTx('buy', sym, diff, usd, '', '');
+        }
+      });
+      saveH(balances);
+      renderAll();
+    }
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     if (statusEl) statusEl.innerHTML = 'On-chain · ' + time + ' <i class="ph-bold ph-arrows-clockwise" style="font-size:11px;"></i>';
   } catch (e) {
