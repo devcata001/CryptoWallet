@@ -524,6 +524,21 @@ const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).
 const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
 
 /* ══ BOOT ════════════════════════════════════════════════════════ */
+// One-time reconciliation: if holdings exist but tx history is empty,
+// seed a synthetic "Received" entry for each non-zero holding so the
+// history panel is never blank when a balance is present.
+(function seedTxHistoryIfEmpty() {
+  if (getTxs().length > 0) return;
+  const h = getH();
+  ASSETS.forEach(a => {
+    const qty = h[a.sym] || 0;
+    if (qty > 0.000001) {
+      const usd = qty * a.price;
+      logTx('buy', a.sym, qty, usd, '', '');
+    }
+  });
+})();
+
 renderAll();
 fetchPrices();
 fetchOnChainBalances();
