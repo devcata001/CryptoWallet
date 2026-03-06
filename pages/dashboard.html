@@ -7,7 +7,8 @@
   <title>Nova Wallet – Dashboard</title>
   <link rel="stylesheet" href="../css/nova.css" />
   <link rel="stylesheet" href="../css/dashboard.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"
+    integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
   <style>
     @keyframes spin {
       to {
@@ -68,7 +69,7 @@
 
         <!-- Actions -->
         <div class="action-row fade-in delay-1">
-          <button class="action-btn" onclick="openSheet('buySheet')">
+          <button class="action-btn" onclick="openSheet('buySheet')" disabled style="opacity:.4;cursor:not-allowed;">
             <div class="icon"><i class="ph-bold ph-shopping-cart"></i></div>
             <span>Buy</span>
           </button>
@@ -247,7 +248,8 @@
           </div>
         </div>
         <div id="buyPreview" style="font-size:13px;color:var(--muted);margin-bottom:16px;min-height:16px;"></div>
-        <button class="btn btn-primary" onclick="doBuy()"><i class="ph-bold ph-plus"></i> Add to Wallet</button>
+        <button class="btn btn-primary" disabled style="opacity:.4;cursor:not-allowed;"><i class="ph-bold ph-clock"></i>
+          Coming Soon</button>
       </div>
     </div>
 
@@ -279,8 +281,12 @@
     <div class="notify-fixed" id="notifyArea"></div>
   </div><!-- /phone-frame -->
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js" integrity="sha384-LMUiUHpaYNGZFzWFRjsADnCSqae1Mk5llcUOHOLDhCxkyF2cdsWAueTZAzV+swW/" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"
+    integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"
+    integrity="sha384-LMUiUHpaYNGZFzWFRjsADnCSqae1Mk5llcUOHOLDhCxkyF2cdsWAueTZAzV+swW/"
+    crossorigin="anonymous"></script>
   <script src="../js/web3.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="../js/dashboard.js"></script>
