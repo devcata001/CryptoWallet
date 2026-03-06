@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Nova Wallet – Create Password</title>
   <link rel="stylesheet" href="../css/nova.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js" integrity="sha384-LMUiUHpaYNGZFzWFRjsADnCSqae1Mk5llcUOHOLDhCxkyF2cdsWAueTZAzV+swW/" crossorigin="anonymous"></script>
   <script src="../js/web3.js"></script>
   <style>
     .strength-bar {
@@ -210,8 +210,7 @@
       if (!agreed) return err('Please agree to the terms above.');
       if (mode === 'import') {
         const srp = document.getElementById('srpImport').value.trim();
-        const words = srp.split(/\s+/).filter(Boolean);
-        if (words.length !== 12 && words.length !== 24) return err('Enter a valid 12 or 24-word recovery phrase.');
+        if (!NW.validateMnemonic(srp)) return err('Invalid recovery phrase — check spelling and word order.');
         const p1 = document.getElementById('pw1i').value;
         const p2 = document.getElementById('pw2i').value;
         if (p1.length < 8) return err('Password must be at least 8 characters.');
@@ -221,7 +220,8 @@
         localStorage.setItem('nv_password', await pbkdf2Hash(p1));
         const encKeyHex = await deriveExportSrpKey(p1);
         sessionStorage.setItem('nv_enc_key', encKeyHex);
-        localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, words));
+        const srpWords = srp.split(/\s+/).filter(Boolean);
+        localStorage.setItem('nv_srp', await encryptSrp(encKeyHex, srpWords));
         localStorage.setItem('nv_imported', '1');
         location.href = 'success.html?mode=import';
       } else {

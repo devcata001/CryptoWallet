@@ -145,16 +145,6 @@ function bgClose(e, id) { if (e.target === document.getElementById(id)) closeShe
 /* ══ RECEIVE ══════════════════════════════════════════════════════════ */
 let currentAddr = '';
 
-const ADDR_NETWORK_KEY = {
-  ETH: 'EVM_ETH',
-  USDT: 'EVM_ETH',
-  USDC: 'EVM_ETH',
-  BNB: 'EVM_BNB',
-  USDT_BEP20: 'EVM_BNB',
-  USDC_BEP20: 'EVM_BNB',
-  BTC: 'BTC',
-  SOL: 'SOL',
-};
 
 const RECEIVE_NETWORKS = {
   ETH: 'Ethereum Mainnet (ERC-20)',
@@ -168,32 +158,19 @@ const RECEIVE_NETWORKS = {
 };
 
 async function deriveAddr(sym) {
-  const netKey = ADDR_NETWORK_KEY[sym] || sym;
-  const keyHex = sessionStorage.getItem('nv_enc_key');
-  const stored = localStorage.getItem('nv_srp') || '';
-  let srp;
-  if (stored.includes(':') && keyHex) {
-    try {
-      const key = await crypto.subtle.importKey('raw', hexToBytes(keyHex), { name: 'AES-GCM' }, false, ['decrypt']);
-      const colonAt = stored.indexOf(':');
-      const iv = hexToBytes(stored.slice(0, colonAt));
-      const data = Uint8Array.from(atob(stored.slice(colonAt + 1)), c => c.charCodeAt(0));
-      const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-      srp = JSON.parse(new TextDecoder().decode(dec));
-    } catch (_) { srp = []; }
-  } else {
-    srp = JSON.parse(stored || '[]');
+  const enc = sessionStorage.getItem('nv_enc_key');
+  if (!enc) return '—';
+  try {
+    const wallet = await NW.initFromSRP(enc);
+    const evm = ['ETH', 'USDT', 'USDC', 'BNB', 'USDT_BEP20', 'USDC_BEP20'];
+    if (evm.includes(sym)) return wallet.evmAddress;
+    if (sym === 'BTC') return wallet.btcAddress;
+    if (sym === 'SOL') return wallet.solAddress;
+    return wallet.evmAddress;
+  } catch (e) {
+    console.warn('[NW] deriveAddr failed:', e.message);
+    return '—';
   }
-  const seed = srp.join(' ') || 'nova-wallet-default-seed';
-  const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed + ':' + netKey));
-  const bytes = new Uint8Array(hashBuf);
-  const hex = bytesToHex(bytes);
-  if (netKey === 'BTC') return 'bc1q' + hex.slice(0, 38);
-  if (netKey === 'SOL') {
-    const b58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    return Array.from(bytes.slice(0, 32)).map(b => b58[b % 58]).join('').slice(0, 44);
-  }
-  return '0x' + hex.slice(0, 40);
 }
 
 async function showReceiveAddr() {
@@ -415,7 +392,10 @@ function openNotify(msg, type) {
   const el = document.createElement('div');
   el.className = 'notify notify-' + (type || 'success');
   el.style.pointerEvents = 'all';
-  el.innerHTML = `<i class="ph-bold ph-${type === 'error' ? 'warning' : 'check-circle'}"></i> ${msg}`;
+  const icon = document.createElement('i');
+  icon.className = `ph-bold ph-${type === 'error' ? 'warning' : 'check-circle'}`;
+  el.appendChild(icon);
+  el.appendChild(document.createTextNode(' ' + msg));
   document.getElementById('notifyArea').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
@@ -482,7 +462,6 @@ async function fetchOnChainBalances() {
   if (statusEl) statusEl.textContent = 'Fetching wallet…';
   try {
     const walletData = await NW.initFromSRP(enc);
-    window._walletAddresses = walletData;
     const balances = await NW.fetchAllBalances(walletData);
     saveH(balances);
     renderAll();
