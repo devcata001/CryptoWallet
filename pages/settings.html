@@ -227,6 +227,25 @@
             </div>
           </div>
 
+          <!-- Data Sync -->
+          <div class="settings-group">
+            <div class="settings-label">Data Sync</div>
+            <div class="settings-item" onclick="openSheet('exportSheet')">
+              <div class="left">
+                <i class="ph-bold ph-export" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Export Portfolio Data</div>
+              </div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="openSheet('importSheet')">
+              <div class="left">
+                <i class="ph-bold ph-import" style="background:rgba(61,255,32,.12);color:var(--green);"></i>
+                <div class="item-title">Import Portfolio Data</div>
+              </div>
+              <div class="right"><i class="ph-bold ph-caret-right"></i></div>
+            </div>
+          </div>
+
           <!-- Support -->
           <div class="settings-group">
             <div class="settings-label">Support</div>
@@ -293,6 +312,47 @@
         </div>
         <button class="btn btn-primary" onclick="doChangePin()">
           <i class="ph-bold ph-key"></i> Update Password
+        </button>
+      </div>
+    </div>
+
+    <!-- ── EXPORT SHEET ──────────────────────────────────── -->
+    <div class="sheet-overlay" id="exportSheet" onclick="if(event.target===this)closeSheet('exportSheet')">
+      <div class="sheet-card">
+        <div class="sheet-header">
+          <h3>Export Portfolio Data</h3>
+          <button class="sheet-close" onclick="closeSheet('exportSheet')">&#x2715;</button>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Copy the code below and paste it into <strong style="color:var(--text);">Import Portfolio Data</strong> on
+          your other device to sync balances and history.
+        </p>
+        <textarea id="exportPayload" class="nova-input" rows="5" readonly
+          style="resize:none;font-family:monospace;font-size:11px;line-height:1.5;word-break:break-all;"></textarea>
+        <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="copyExport()">
+          <i class="ph-bold ph-copy"></i> Copy to Clipboard
+        </button>
+      </div>
+    </div>
+
+    <!-- ── IMPORT SHEET ──────────────────────────────────── -->
+    <div class="sheet-overlay" id="importSheet" onclick="if(event.target===this)closeSheet('importSheet')">
+      <div class="sheet-card">
+        <div class="sheet-header">
+          <h3>Import Portfolio Data</h3>
+          <button class="sheet-close" onclick="closeSheet('importSheet')">&#x2715;</button>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Paste the export code from your other device. This will <strong style="color:var(--error);">overwrite</strong>
+          the portfolio data on this device.
+        </p>
+        <textarea id="importPayload" class="nova-input" rows="5" placeholder="Paste export code here…"
+          style="resize:none;font-family:monospace;font-size:11px;line-height:1.5;word-break:break-all;"></textarea>
+        <div id="importError" class="error-msg" style="display:none;margin-top:10px;">
+          <i class="ph-bold ph-warning"></i> <span id="importErrMsg"></span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="doImport()">
+          <i class="ph-bold ph-import"></i> Import &amp; Apply
         </button>
       </div>
     </div>
@@ -407,6 +467,47 @@
       el.innerHTML = `<i class="ph-bold ph-${type === 'error' ? 'warning' : 'check-circle'}"></i> ${msg}`;
       document.getElementById('notifyArea').appendChild(el);
       setTimeout(() => el.remove(), 3500);
+    }
+
+    // ── Export / Import ────────────────────────────────────
+    const EXPORT_KEYS = ['nv_holdings', 'nv_txs'];
+
+    const _origOpenSheet = openSheet;
+    openSheet = function (id) {
+      if (id === 'exportSheet') {
+        const payload = {};
+        EXPORT_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) payload[k] = v; });
+        document.getElementById('exportPayload').value = btoa(JSON.stringify(payload));
+      }
+      _origOpenSheet(id);
+    };
+
+    function copyExport() {
+      const txt = document.getElementById('exportPayload').value;
+      if (!txt) { notify('Nothing to export', 'error'); return; }
+      navigator.clipboard.writeText(txt)
+        .then(() => notify('Copied! Paste on your other device.', 'success'))
+        .catch(() => notify('Copy failed — select and copy the text manually.', 'error'));
+    }
+
+    function doImport() {
+      const raw = document.getElementById('importPayload').value.trim();
+      const errEl = document.getElementById('importError');
+      const errMsgEl = document.getElementById('importErrMsg');
+      function showErr(m) { errMsgEl.textContent = m; errEl.style.display = 'flex'; }
+      errEl.style.display = 'none';
+      if (!raw) { showErr('Paste an export code first.'); return; }
+      let payload;
+      try { payload = JSON.parse(atob(raw)); } catch (_) {
+        showErr('Invalid export code — make sure you copied the full text.'); return;
+      }
+      let count = 0;
+      EXPORT_KEYS.forEach(k => { if (payload[k] != null) { localStorage.setItem(k, payload[k]); count++; } });
+      if (!count) { showErr('No portfolio data found in this code.'); return; }
+      closeSheet('importSheet');
+      document.getElementById('importPayload').value = '';
+      notify('Portfolio data imported! Redirecting…', 'success');
+      setTimeout(() => location.href = 'dashboard.html', 1800);
     }
   </script>
 </body>
