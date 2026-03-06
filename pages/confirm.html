@@ -111,6 +111,9 @@
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+  <script src="../js/web3.js"></script>
   <script src="../js/bip39.js"></script>
   <script>
     const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
@@ -138,9 +141,9 @@
         srp = JSON.parse(stored);
       }
       if (!srp) {
-        /* Use crypto.getRandomValues for cryptographically secure SRP generation */
-        const randoms = crypto.getRandomValues(new Uint32Array(12));
-        srp = Array.from(randoms, r => BIP39_WORDLIST[r % BIP39_WORDLIST.length]);
+        /* Generate a proper BIP39 mnemonic with valid checksum via ethers.js */
+        const phrase = NW.generateMnemonic();
+        srp = phrase.split(' ');
       }
       localStorage.setItem('nv_srp', keyHex ? await encryptSrp(keyHex, srp) : JSON.stringify(srp));
       return srp;

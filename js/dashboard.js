@@ -219,9 +219,9 @@ function copyAddr() {
 function getTxs() { return JSON.parse(localStorage.getItem('nv_txs') || '[]'); }
 function saveTxs(txs) { localStorage.setItem('nv_txs', JSON.stringify(txs.slice(0, 100))); }
 
-function logTx(type, sym, qty, usd, addr) {
+function logTx(type, sym, qty, usd, addr, txHash) {
   const txs = getTxs();
-  txs.unshift({ type, sym, qty, usd: usd || 0, addr: addr || '', ts: Date.now() });
+  txs.unshift({ type, sym, qty, usd: usd || 0, addr: addr || '', hash: txHash || '', ts: Date.now() });
   saveTxs(txs);
 }
 
@@ -243,13 +243,17 @@ function renderTxList() {
     const date = new Date(tx.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const time = new Date(tx.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const shortAddr = tx.addr ? tx.addr.slice(0, 6) + '…' + tx.addr.slice(-4) : '';
+    const explorerHref = tx.hash ? NW.explorerUrl(tx.hash, tx.sym) : null;
+    const hashTag = explorerHref
+      ? `<a href="${explorerHref}" target="_blank" style="color:var(--green);font-size:11px;text-decoration:none;" title="View on explorer">${tx.hash.slice(0, 8)}… ↗</a>`
+      : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="width:40px;height:40px;border-radius:50%;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <i class="ph-bold ${icon}" style="color:${iconCol};font-size:15px;"></i>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;font-size:14px;">${label} ${tx.sym}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${date} · ${time}${shortAddr ? ' · ' + shortAddr : ''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${date} · ${time}${shortAddr ? ' · ' + shortAddr : ''}${hashTag ? ' · ' + hashTag : ''}</div>
       </div>
       <div style="text-align:right;flex-shrink:0;">
         <div style="font-weight:700;font-size:14px;color:${iconCol};">${tx.type === 'buy' ? '+' : '-'}${qtyFmt} ${tx.sym}</div>
@@ -286,13 +290,15 @@ function updateSendPreview() {
     `≈ $${fmt(usd, 2)} USD &nbsp;·&nbsp; Fee ≈ ${stable ? '$' + fee : fee.toFixed(6) + ' ' + sym} &nbsp;·&nbsp; Held: ${fmt(h[sym] || 0, stable ? 2 : 6)} ${sym}`;
 }
 
-function doSend() {
+async function doSend() {
   const addr = document.getElementById('sendAddr').value.trim();
   const amt = parseFloat(document.getElementById('sendAmt').value) || 0;
   const sym = document.getElementById('sendAsset').value;
   const errEl = document.getElementById('sendError');
   const errMsg = document.getElementById('sendErrMsg');
+  const btn = document.querySelector('#sendSheet .btn-primary');
   const se = m => { errMsg.textContent = m; errEl.style.display = 'flex'; };
+
   errEl.style.display = 'none';
   if (!addr) return se('Enter a recipient address');
   const addrErr = validateSendAddr(addr, sym);
@@ -300,15 +306,44 @@ function doSend() {
   if (!amt || amt <= 0) return se('Enter an amount > 0');
   const h = getH();
   if ((h[sym] || 0) < amt) return se('Insufficient ' + sym + ' balance');
-  h[sym] = (h[sym] || 0) - amt;
-  saveH(h);
-  const usd = amt * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
-  logTx('send', sym, amt, usd, addr);
-  renderAll();
-  closeSheet('sendSheet');
-  document.getElementById('sendAddr').value = '';
-  document.getElementById('sendAmt').value = '';
-  openTxModal('send', sym, amt, usd, addr);
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-circle-notch" style="animation:spin 1s linear infinite"></i> Broadcasting…';
+
+  try {
+    const enc = sessionStorage.getItem('nv_enc_key');
+    const walletData = await NW.initFromSRP(enc);
+    let txHash;
+
+    if (sym === 'ETH') {
+      txHash = await NW.sendETH(walletData.privateKeyEVM, addr, amt);
+    } else if (sym === 'BNB') {
+      txHash = await NW.sendBNB(walletData.privateKeyEVM, addr, amt);
+    } else if (['USDT', 'USDC'].includes(sym)) {
+      txHash = await NW.sendToken(walletData.privateKeyEVM, addr, amt, sym);
+    } else if (sym === 'SOL') {
+      txHash = await NW.sendSOL(walletData.solSecretHex, addr, amt);
+    } else if (sym === 'BTC') {
+      throw new Error('BTC sending support coming soon — please use a desktop wallet for BTC');
+    }
+
+    const usd = amt * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
+    logTx('send', sym, amt, usd, addr, txHash);
+    renderAll();
+    closeSheet('sendSheet');
+    document.getElementById('sendAddr').value = '';
+    document.getElementById('sendAmt').value = '';
+    openTxModal('send', sym, amt, usd, addr, txHash);
+    // Refresh on-chain balances after a short delay
+    setTimeout(fetchOnChainBalances, 8000);
+
+  } catch (e) {
+    const msg = e.message || 'Transaction failed';
+    se(msg.includes('insufficient') || msg.includes('funds') ? 'Insufficient funds or gas' : msg);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> Send';
+  }
 }
 
 /* ══ BUY ══════════════════════════════════════════════════════════════ */
@@ -330,14 +365,6 @@ function doBuy() {
   if (!a || usd <= 0) { openNotify('Enter a USD amount', 'error'); return; }
   const qty = usd / a.price;
   const h = getH();
-  const currentTotal = ASSETS.reduce((sum, x) => sum + (h[x.sym] || 0) * x.price, 0);
-  if (currentTotal < 200) {
-    if (currentTotal + usd > 200) {
-      closeSheet('buySheet');
-      openNotify(`Portfolio limit is $200. You have $${fmt(currentTotal, 2)} — max you can add is $${fmt(Math.max(0, 200 - currentTotal), 2)}.`, 'error');
-      return;
-    }
-  }
   h[sym] = (h[sym] || 0) + qty;
   saveH(h);
   logTx('buy', sym, qty, usd);
@@ -446,17 +473,34 @@ function snoozeBackupWarn() {
   }
 }
 
-/* ══ HELPERS ══════════════════════════════════════════════════════════ */
+/* ══ ON-CHAIN BALANCE FETCH ═══════════════════════════════════════ */
+async function fetchOnChainBalances() {
+  const enc = sessionStorage.getItem('nv_enc_key');
+  if (!enc) return;
+  const statusEl = document.getElementById('lastUpdated');
+  const prev = statusEl ? statusEl.textContent : '';
+  if (statusEl) statusEl.textContent = 'Fetching wallet…';
+  try {
+    const walletData = await NW.initFromSRP(enc);
+    window._walletAddresses = walletData;
+    const balances = await NW.fetchAllBalances(walletData);
+    saveH(balances);
+    renderAll();
+    if (statusEl) statusEl.textContent =
+      'On-chain · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    console.warn('[NW] Balance fetch failed:', e.message);
+    if (statusEl) statusEl.textContent = prev;
+  }
+}
+
+/* ══ HELPERS ══════════════════════════════════════════════════════ */
 const bytesToHex = b => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
 const hexToBytes = h => new Uint8Array(h.match(/.{2}/g).map(x => parseInt(x, 16)));
 
-/* ══ BOOT: enforce $200 cap then render ══════════════════════════════ */
-(function enforceCapOnLoad() {
-  const h = getH();
-  const total = ASSETS.reduce((sum, a) => sum + (h[a.sym] || 0) * a.price, 0);
-  if (total > 200) saveH(Object.fromEntries(ASSETS.map(a => [a.sym, 0])));
-})();
-
+/* ══ BOOT ════════════════════════════════════════════════════════ */
 renderAll();
 fetchPrices();
+fetchOnChainBalances();
 setInterval(fetchPrices, 60_000);
+setInterval(fetchOnChainBalances, 5 * 60_000); // refresh on-chain every 5 min
