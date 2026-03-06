@@ -41,8 +41,8 @@ function loadCache() {
 
 async function fetchPrices() {
   if (loadCache()) {
-    document.getElementById('lastUpdated').textContent =
-      'Cached · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('lastUpdated').innerHTML =
+      'Cached · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' <i class="ph-bold ph-arrows-clockwise" style="font-size:11px;"></i>';
     renderAll();
     return;
   }
@@ -483,19 +483,34 @@ async function fetchOnChainBalances() {
   const enc = sessionStorage.getItem('nv_enc_key');
   if (!enc) return;
   const statusEl = document.getElementById('lastUpdated');
-  const prev = statusEl ? statusEl.textContent : '';
-  if (statusEl) statusEl.textContent = 'Fetching wallet…';
+  if (statusEl) statusEl.innerHTML = '<i class="ph-bold ph-arrows-clockwise" style="font-size:11px;animation:spin 1s linear infinite;"></i> Refreshing…';
   try {
     const walletData = await NW.initFromSRP(enc);
+    if (!walletData) throw new Error('Wallet not available');
+    const oldH = getH();
     const balances = await NW.fetchAllBalances(walletData);
+    // Detect incoming transfers: log a receive entry for any asset that increased
+    ['ETH', 'BNB', 'SOL', 'BTC', 'USDT', 'USDC'].forEach(sym => {
+      const diff = (balances[sym] || 0) - (oldH[sym] || 0);
+      if (diff > 0.000001) {
+        const usd = diff * ((ASSETS.find(x => x.sym === sym) || {}).price || 0);
+        logTx('buy', sym, diff, usd, '', '');
+      }
+    });
     saveH(balances);
     renderAll();
-    if (statusEl) statusEl.textContent =
-      'On-chain · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (statusEl) statusEl.innerHTML = 'On-chain · ' + time + ' <i class="ph-bold ph-arrows-clockwise" style="font-size:11px;"></i>';
   } catch (e) {
     console.warn('[NW] Balance fetch failed:', e.message);
-    if (statusEl) statusEl.textContent = prev;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (statusEl) statusEl.innerHTML = 'Refresh failed · ' + time + ' <i class="ph-bold ph-arrows-clockwise" style="font-size:11px;"></i>';
   }
+}
+
+function manualRefresh() {
+  fetchPrices();
+  fetchOnChainBalances();
 }
 
 /* ══ HELPERS ══════════════════════════════════════════════════════ */

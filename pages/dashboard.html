@@ -7,8 +7,7 @@
   <title>Nova Wallet – Dashboard</title>
   <link rel="stylesheet" href="../css/nova.css" />
   <link rel="stylesheet" href="../css/dashboard.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"
-    />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
   <style>
     @keyframes spin {
       to {
@@ -113,7 +112,9 @@
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <span
               style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Assets</span>
-            <span style="font-size:12px;color:var(--muted);" id="lastUpdated">Fetching prices...</span>
+            <span style="font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;"
+              id="lastUpdated" onclick="manualRefresh()" title="Tap to refresh balances">Fetching prices... <i
+                class="ph-bold ph-arrows-clockwise" style="font-size:11px;"></i></span>
           </div>
           <div id="assetList"></div>
 
@@ -281,12 +282,8 @@
     <div class="notify-fixed" id="notifyArea"></div>
   </div><!-- /phone-frame -->
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"
-   
-   ></script>
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"
-   
-   ></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
   <script src="../js/web3.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="../js/dashboard.js"></script>
